@@ -4,6 +4,7 @@ const Team= require('../models/field');
 const Venue = require('../models/venue');
 const Trainer = require('../models/trainer');
 const Refeere = require('../models/referee');
+const Promotion = require('../models/promotion'); 
 require('dotenv').config();
 const client = new MongoClient(process.env.MONGODB_URI, {
   serverApi: {
@@ -246,31 +247,127 @@ async function addReferee(req, res) {
     await client.close();
   }
 }
-async function updateReferee(req, res) {
+//promotion
+async function createPromotion(req, res) {
   try {
-    const { id } = req.params;
-    const { name, sport, contact, pricePerMatch } = req.body;
+    const { name, description, discount, startDate, endDate } = req.body;
 
-    if (!id || !name || !sport || !contact || !pricePerMatch) {
-      return res.status(400).json({ message: 'Thiếu thông tin cần thiết' });
+    if (!name || !description || !discount || !startDate || !endDate) {
+      return res.status(400).json({ message: 'Missing required information' });
     }
 
     await connectToDB();
-    const refereesCollection = client.db('managefield').collection('referees');
+    const promotionsCollection = client.db('managefield').collection('promotion');
 
-    const result = await refereesCollection.updateOne(
-      { _id: ObjectId.createFromHexString(id) },
-      { $set: { name, sport, contact, pricePerMatch } }
+    const newPromotion = { name, description, discount, startDate, endDate };
+    const result = await promotionsCollection.insertOne(newPromotion);
+
+    console.log(`New promotion added with ID ${result.insertedId}`);
+    res.json({ message: 'Promotion created successfully', promotionId: result.insertedId });
+  } catch (err) {
+    console.error('Error creating promotion:', err);
+    res.status(500).json({ message: 'Error creating promotion' });
+  } finally {
+    await client.close();
+  }
+}
+async function updatePromotion(req, res) {
+  try {
+    const { id } = req.params;
+    const { name, description, discount, startDate, endDate } = req.body;
+
+    if (!name && !description && !discount && !startDate && !endDate) {
+      return res.status(400).json({ message: 'At least one field is required to update' });
+    }
+
+    await connectToDB();
+    const promotionsCollection = client.db('managefield').collection('promotion');
+
+    const updateFields = {};
+    if (name) updateFields.name = name;
+    if (description) updateFields.description = description;
+    if (discount) updateFields.discount = discount;
+    if (startDate) updateFields.startDate = startDate;
+    if (endDate) updateFields.endDate = endDate;
+
+    const result = await promotionsCollection.updateOne(
+      { _id:  ObjectId.createFromHexString(id) },
+      { $set: updateFields }
     );
 
     if (result.modifiedCount === 0) {
-      return res.status(404).json({ message: 'Không tìm thấy trọng tài' });
+      return res.status(404).json({ message: 'Promotion not found or no changes made' });
     }
 
-    res.json({ message: 'Cập nhật trọng tài thành công' });
+    res.json({ message: 'Promotion updated successfully' });
   } catch (err) {
-    console.error('Lỗi khi cập nhật trọng tài:', err);
-    res.status(500).json({ message: 'Lỗi khi cập nhật trọng tài' });
+    console.error('Error updating promotion:', err);
+    res.status(500).json({ message: 'Error updating promotion' });
+  } finally {
+    await client.close();
+  }
+}
+async function getPromotionById(req, res) {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ message: 'Promotion ID is required' });
+    }
+
+    await connectToDB();
+    const promotionsCollection = client.db('managefield').collection('promotion');
+
+    const promotion = await promotionsCollection.findOne({ _id: ObjectId.createFromHexString(id) });
+
+    if (!promotion) {
+      return res.status(404).json({ message: 'Promotion not found' });
+    }
+
+    res.json(promotion);
+  } catch (err) {
+    console.error('Error fetching promotion:', err);
+    res.status(500).json({ message: 'Error fetching promotion' });
+  } finally {
+    await client.close();
+  }
+}
+async function getAllPromotion(req, res) {
+  try {
+    await connectToDB();
+    const promotionsCollection = client.db('managefield').collection('promotion');
+
+    const promotions = await promotionsCollection.find().toArray();
+
+    res.json(promotions);
+  } catch (err) {
+    console.error('Error fetching promotions:', err);
+    res.status(500).json({ message: 'Error fetching promotions' });
+  } finally {
+    await client.close();
+  }
+}
+async function deletePromotion(req, res) {
+  try {
+    const { id } = req.body;
+
+    if (!id) {
+      return res.status(400).json({ message: 'Promotion ID is required' });
+    }
+
+    await connectToDB();
+    const promotionsCollection = client.db('managefield').collection('promotion');
+
+    const result = await promotionsCollection.deleteOne({ _id:  ObjectId.createFromHexString(id) });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ message: 'Promotion not found' });
+    }
+
+    res.json({ message: 'Promotion deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting promotion:', err);
+    res.status(500).json({ message: 'Error deleting promotion' });
   } finally {
     await client.close();
   }
@@ -283,4 +380,11 @@ async function updateReferee(req, res) {
 
 
 
-module.exports = {createField,removeField,createVenue,removeVenue,addTrainer,updateTrainer,deleteTrainer};
+
+
+
+
+
+module.exports = {createField,removeField,createVenue,removeVenue,addTrainer,updateTrainer,deleteTrainer
+  ,createPromotion,deletePromotion,getPromotionById,updatePromotion,getAllPromotion
+};

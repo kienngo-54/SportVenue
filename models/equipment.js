@@ -6,29 +6,23 @@ const equipmentSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  description: {
-    type: String
-  },
-  type: {
+  
+  sport: {
     type: String,
-    enum: ['ball', 'net', 'shoes', 'other'],
     required: true
   },
   quantity: {
     type: Number,
     required: true
   },
-  unitPrice: {
+  Price: {
     type: Number,
     required: true
   },
-  totalValue: {
-    type: Number
-  }
+  
 });
 
-equipmentSchema.virtual('totalValue').get(function() {
-  return this.quantity * this.unitPrice;
-});
+
+
 
 module.exports = mongoose.model('Equipment', equipmentSchema);

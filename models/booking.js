@@ -7,13 +7,9 @@ const bookingSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
-  team: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Team',
-    required: true
-  },
   field: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
+     ref: 'Field',
     required: true
   },
   startTime: {

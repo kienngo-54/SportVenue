@@ -13,3 +13,4 @@
     "email": "admin@gmail.com",
     "password": "admin"
 }
+"C:\Users\dell\Downloads\mongodb-database-tools-windows-x86_64-100.10.0\mongodb-database-tools-windows-x86_64-100.10.0\bin\mongoexport.exe" --uri mongodb+srv://duckien44:kien4420@cluster0.sldzf2a.mongodb.net/managefield --collection trainer --type json --out C:\Users\dell\Desktop\LVTN\Backend\sport.json

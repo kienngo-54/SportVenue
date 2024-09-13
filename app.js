@@ -1,8 +1,8 @@
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
-const userRoutes = require('./routes/user.js');
-const adminRoutes=require('./routes/admin.js')
+const userRouter = require('./routes/user.js');
+const adminRouter=require('./routes/admin.js')
 
 
 
@@ -12,8 +12,8 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
 // Routes
-app.use('/api/user', userRoutes);
-app.use('/api/admin',adminRoutes);
+app.use('/api/user', userRouter);
+app.use('/api/admin',adminRouter);
 
 
 // Start server

@@ -6,7 +6,7 @@ const Trainer = require('../models/trainer');
 const Refeere = require('../models/referee');
 const Promotion = require('../models/promotion'); 
 const User = require('../models/user'); 
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 require('dotenv').config();
 
 const client = new MongoClient(process.env.MONGODB_URI, {
@@ -521,7 +521,7 @@ async function resetPassword(req, res) {
     });
   }
 }
-const getAllBooking = async (req, res) => {
+async function getAllBooking(req, res){
   try {
       await connectToDB();
       const bookingsCollection = client.db('managefield').collection('booking');

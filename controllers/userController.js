@@ -1,6 +1,6 @@
 const { MongoClient, ServerApiVersion, ObjectId} = require('mongodb');
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const User = require('../models/user');
 const Team= require('../models/team');
 const Field = require('../models/field');

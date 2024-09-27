@@ -33,9 +33,4 @@ router.post('/booking',verifyToken,createBooking);
 router.post('/matching',verifyToken, sendMatchRequest);
 router.get('/matching',verifyToken, getMatchRequests);
 router.patch('/matching',verifyToken, respondToMatchRequest);
-
-
-
-
-
 module.exports = router;

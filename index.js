@@ -17,9 +17,7 @@ app.use('/api/admin',adminRouter);
 
 
 // Start server
-const PORT = process.env.PORT || 10000;
-const server =app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server is running on port ${PORT}`);
+const port = 3000;
+app.listen(port, () => {
+  console.log(`Server started on port ${port}`);
 });
-server.keepAliveTimeout = 120000;  // 120 seconds
-server.headersTimeout = 120000;    // 120 seconds

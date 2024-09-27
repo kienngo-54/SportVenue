@@ -5,7 +5,10 @@ const Venue = require('../models/venue');
 const Trainer = require('../models/trainer');
 const Refeere = require('../models/referee');
 const Promotion = require('../models/promotion'); 
+const User = require('../models/user'); 
+const bcrypt = require('bcrypt');
 require('dotenv').config();
+
 const client = new MongoClient(process.env.MONGODB_URI, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -250,16 +253,16 @@ async function addReferee(req, res) {
 //promotion
 async function createPromotion(req, res) {
   try {
-    const { name, description, discount, startDate, endDate } = req.body;
+    const { name, description, type, value, startDate, endDate } = req.body;
 
-    if (!name || !description || !discount || !startDate || !endDate) {
+    if (!name || !description || !type||!value || !startDate || !endDate) {
       return res.status(400).json({ message: 'Missing required information' });
     }
 
     await connectToDB();
     const promotionsCollection = client.db('managefield').collection('promotion');
 
-    const newPromotion = { name, description, discount, startDate, endDate };
+    const newPromotion = { name, description, type,value, startDate, endDate };
     const result = await promotionsCollection.insertOne(newPromotion);
 
     console.log(`New promotion added with ID ${result.insertedId}`);
@@ -349,7 +352,7 @@ async function getAllPromotion(req, res) {
 }
 async function deletePromotion(req, res) {
   try {
-    const { id } = req.body;
+    const { id } = req.params;
 
     if (!id) {
       return res.status(400).json({ message: 'Promotion ID is required' });
@@ -375,6 +378,202 @@ async function deletePromotion(req, res) {
 
 
 
+async function getAllUsers(req, res) {
+  try {
+    await connectToDB();
+    const usersCollection = client.db('managefield').collection('users');
+    const users = await usersCollection.find({},{ projection: { _id: 1, username: 1 } }).toArray();
+    
+    // Trả về danh sách người dùng
+    res.status(200).json({
+      success: true,
+      data: users
+    });
+  } catch (error) {
+    console.error('Error getting users:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Đã xảy ra lỗi khi lấy danh sách người dùng.'
+    });
+  }
+}
+async function getUserById(req, res) {
+  try {
+    const { id } = req.params;
+
+    await connectToDB();
+    const usersCollection = client.db('managefield').collection('users');
+
+    // Tìm người dùng theo ID và chỉ trả về _id và name
+    const user = await usersCollection.findOne(
+      { _id: ObjectId.createFromHexString(id) }, // Điều kiện tìm kiếm
+      // Chỉ trả về _id và name
+    );
+
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy người dùng với ID này.',
+      });
+    }
+
+    // Trả về thông tin người dùng
+    res.status(200).json({
+      success: true,
+      data: user,
+    });
+  } catch (error) {
+    console.error('Error getting user by ID:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Đã xảy ra lỗi khi lấy thông tin người dùng.',
+    });
+  }
+}
+async function deleteUser(req, res) {
+  try {
+    const { id } = req.params; // Lấy id từ URL
+
+    // Kiểm tra nếu không có id
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Thiếu thông tin id của người dùng.',
+      });
+    }
+
+    await connectToDB(); // Kết nối tới cơ sở dữ liệu
+    const usersCollection = client.db('managefield').collection('users');
+
+    // Xóa người dùng dựa trên id
+    const result = await usersCollection.deleteOne({ _id:  ObjectId.createFromHexString(id) });
+
+    // Kiểm tra nếu không tìm thấy người dùng
+    if (result.deletedCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy người dùng với ID này.',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Xóa người dùng thành công.',
+    });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Đã xảy ra lỗi  ',
+    });
+  }
+}
+
+async function resetPassword(req, res) {
+  try {
+    const { id } = req.params;
+    const newPassword="12345678";
+
+    // Kiểm tra các tham số đầu vào
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Thiếu thông tin cần thiết (id hoặc mật khẩu mới).',
+      });
+    }
+
+    // Kết nối cơ sở dữ liệu
+    await connectToDB();
+    const usersCollection = client.db('managefield').collection('users');
+
+    // Tìm người dùng dựa trên id
+    const user = await usersCollection.findOne({ _id: ObjectId.createFromHexString(id) });
+
+    // Nếu không tìm thấy người dùng
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy người dùng.',
+      });
+    }
+
+    // Hash mật khẩu mới
+    const saltRounds = user.salt;
+    
+    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+    // Cập nhật mật khẩu trong cơ sở dữ liệu
+    await usersCollection.updateOne(
+      { _id: ObjectId.createFromHexString(id) },
+      { $set: { password: hashedPassword} }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: 'Đặt lại mật khẩu thành công.',
+    });
+  } catch (error) {
+    console.error('Error resetting password:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Đã xảy ra lỗi khi đặt lại mật khẩu.',
+    });
+  }
+}
+const getAllBooking = async (req, res) => {
+  try {
+      await connectToDB();
+      const bookingsCollection = client.db('managefield').collection('booking');
+      const bookings = await bookingsCollection.find().toArray();
+
+      // Tạo một mảng các ID để tìm thông tin liên quan
+      const userIds = [...new Set(bookings.map(booking => booking.user))];
+      const teamIds = [...new Set(bookings.map(booking => booking.team))];
+      const fieldIds = [...new Set(bookings.map(booking => booking.field))];
+      const refereeIds = [...new Set(bookings.map(booking => booking.referee))];
+      const trainerIds = [...new Set(bookings.map(booking => booking.trainer))];
+
+      // Thực hiện các truy vấn để lấy thông tin từ các collection khác
+      const users = await client.db('managefield').collection('users').find({ _id: { $in: userIds.map(id => ObjectId.createFromHexString(id)) } }).toArray();
+      const teams = await client.db('managefield').collection('team').find({ _id: { $in: teamIds.map(id => ObjectId.createFromHexString(id)) } }).toArray();
+      const fields = await client.db('managefield').collection('field').find({ _id: { $in: fieldIds.map(id => ObjectId.createFromHexString(id)) } }).toArray();
+      const referees = await client.db('managefield').collection('referee').find({ _id: { $in: refereeIds.map(id => ObjectId.createFromHexString(id)) } }).toArray();
+      const trainers = await client.db('managefield').collection('trainer').find({ _id: { $in: trainerIds.map(id => ObjectId.createFromHexString(id)) } }).toArray();
+
+      // Ghép thông tin vào các booking
+      const bookingsWithDetails = bookings.map(booking => ({
+          ...booking,
+          user: users.find(user => user._id.toString() === booking.user.toString()),
+          team: teams.find(team => team._id.toString() === booking.team.toString()),
+          field: fields.find(field => field._id.toString() === booking.field.toString()),
+          referee: referees.find(referee => referee._id.toString() === booking.referee.toString()),
+          trainer: trainers.find(trainer => trainer._id.toString() === booking.trainer.toString()),
+      }));
+
+      return res.status(200).json({
+          success: true,
+          data: bookingsWithDetails
+      });
+  } catch (error) {
+      console.error(error);
+      return res.status(500).json({
+          success: false,
+          message: 'Có lỗi xảy ra khi lấy tất cả thông tin đặt sân',
+      });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -386,5 +585,7 @@ async function deletePromotion(req, res) {
 
 
 module.exports = {createField,removeField,createVenue,removeVenue,addTrainer,updateTrainer,deleteTrainer
-  ,createPromotion,deletePromotion,getPromotionById,updatePromotion,getAllPromotion
-};
+  ,createPromotion,deletePromotion,getPromotionById,updatePromotion,getAllPromotion,
+  getAllUsers,getUserById, deleteUser,resetPassword,
+  getAllBooking
+}

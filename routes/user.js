@@ -18,12 +18,12 @@ router.patch('/address', verifyToken, addOrUpdateAddress);
 router.patch('/name', verifyToken, updateUserName);
 router.post('/changepassword',verifyToken,changePassword);
 //team
-router.post('/team/create',verifyToken,createTeam);
+router.post('/team',verifyToken,createTeam);
 router.patch('/team/:id',verifyToken,addMember);
 router.delete('/team/:id',verifyToken,removeMember);
 router.get('/team',verifyToken,getTeamInfo);
 //field
-router.get('/field/search',verifyToken,searchField);
+router.get('/field',verifyToken,searchField);
 router.get('/equipment',verifyToken,searchEquipment);
 router.get('/referee',verifyToken,searchReferee);
 router.get('/trainer',verifyToken,searchTrainer);
@@ -37,11 +37,5 @@ router.patch('/matching',verifyToken, respondToMatchRequest);
 
 
 
-/*router.post('/login', authenticate, (req, res) => {
-  res.json({ message: 'Logged in successfully' });
-});
 
-router.get('/me', authorize, (req, res) => {
-  res.json(req.user);
-});*/
 module.exports = router;

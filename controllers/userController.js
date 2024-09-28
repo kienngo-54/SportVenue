@@ -38,8 +38,7 @@ async function registerUser(req, res) {
     if (!username || !email || !password) {
       return res.status(400).json({
         ec: 1,  // Lỗi dữ liệu đầu vào
-        total: 0,
-        data: [],
+        data: {},
         msg: 'Thông tin người dùng không hợp lệ',
       });
     }
@@ -51,8 +50,7 @@ async function registerUser(req, res) {
     if (existingUser) {
       return res.status(400).json({
         ec: 1,  // Lỗi người dùng đã tồn tại
-        total: 0,
-        data: [],
+        data: {},
         msg: 'Người dùng đã tồn tại',
       });
     }
@@ -69,7 +67,7 @@ async function registerUser(req, res) {
     return res.json({
       ec: 0,  // Thành công
       total: 1,  // Tổng số kết quả trả về (1 người dùng)
-      data: [{ userId: result.insertedId }],  // Dữ liệu trả về chứa ID người dùng mới
+      data: { userId: result.insertedId },  // Dữ liệu trả về chứa ID người dùng mới
       msg: 'Tạo người dùng thành công',
     });
   } catch (err) {
@@ -78,8 +76,7 @@ async function registerUser(req, res) {
     // Trả về lỗi server
     return res.status(500).json({
       ec: 2,  // Lỗi server
-      total: 0,
-      data: [],
+      data: {},
       msg: 'Lỗi server khi tạo người dùng',
     });
   } finally {
@@ -95,8 +92,7 @@ async function loginUser(req, res) {
     if (!email || !password) {
       return res.status(400).json({
         ec: 1,  // Lỗi thông tin đăng nhập
-        total: 0,
-        data: [],
+        data: {},
         msg: 'Thông tin đăng nhập không hợp lệ',
       });
     }
@@ -108,8 +104,7 @@ async function loginUser(req, res) {
     if (!user) {
       return res.status(401).json({
         ec: 1,  // Lỗi email hoặc mật khẩu không đúng
-        total: 0,
-        data: [],
+        data: {},
         msg: 'Email hoặc mật khẩu không đúng',
       });
     }
@@ -119,8 +114,7 @@ async function loginUser(req, res) {
     if (!isValidPassword) {
       return res.status(401).json({
         ec: 1,  // Lỗi email hoặc mật khẩu không đúng
-        total: 0,
-        data: [],
+        data: {},
         msg: 'Email hoặc mật khẩu không đúng',
       });
     }
@@ -134,7 +128,7 @@ async function loginUser(req, res) {
     return res.json({
       ec: 0,  // Thành công
       total: 1,
-      data: [{ token, userId: user._id, email: user.email, role: user.role }],
+      data: { token, userId: user._id, email: user.email, role: user.role },
       msg: 'Đăng nhập thành công',
     });
   } catch (err) {
@@ -143,16 +137,13 @@ async function loginUser(req, res) {
     // Trả về lỗi server
     return res.status(500).json({
       ec: 2,  // Lỗi server
-      total: 0,
-      data: [],
+      data: {},
       msg: 'Lỗi server khi đăng nhập người dùng',
     });
   } finally {
     await client.close();
   }
 }
-
-
 async function getUserInfo(req, res) {
   try {
     await connectToDB();
@@ -168,8 +159,7 @@ async function getUserInfo(req, res) {
     if (!user) {
       return res.status(404).json({
         ec: 1,  // Lỗi: Không tìm thấy người dùng
-        total: 0,
-        data: [],
+        data: {},
         msg: 'Người dùng không tồn tại',
       });
     }
@@ -181,7 +171,7 @@ async function getUserInfo(req, res) {
     res.status(200).json({
       ec: 0,  // Thành công
       total: 1,
-      data: [userInfo],
+      data: userInfo,
       msg: 'Lấy thông tin người dùng thành công',
     });
   } catch (err) {
@@ -190,8 +180,7 @@ async function getUserInfo(req, res) {
     // Trả về lỗi server
     res.status(500).json({
       ec: 2,  // Lỗi server
-      total: 0,
-      data: [],
+      data: {},
       msg: 'Lỗi server khi lấy thông tin người dùng',
     });
   } finally {
@@ -207,8 +196,7 @@ async function addOrUpdateAddress(req, res) {
     if (!address) {
       return res.status(400).json({
         ec: 1,  // Lỗi: Địa chỉ không hợp lệ
-        total: 0,
-        data: [],
+        data: {},
         msg: 'Địa chỉ không được để trống',
       });
     }
@@ -222,8 +210,7 @@ async function addOrUpdateAddress(req, res) {
     if (!user) {
       return res.status(404).json({
         ec: 1,  // Lỗi: Người dùng không tồn tại
-        total: 0,
-        data: [],
+        data: {},
         msg: 'Không tìm thấy người dùng',
       });
     }
@@ -239,8 +226,7 @@ async function addOrUpdateAddress(req, res) {
     if (result.modifiedCount === 0) {
       return res.status(400).json({
         ec: 1,  // Lỗi: Cập nhật không thành công
-        total: 0,
-        data: [],
+        data: {},
         msg: 'Cập nhật địa chỉ không thành công',
       });
     }
@@ -249,15 +235,14 @@ async function addOrUpdateAddress(req, res) {
     res.json({
       ec: 0,  // Thành công
       total: 1,
-      data: [{ address }],
+      data: { address },
       msg: 'Địa chỉ đã được cập nhật thành công',
     });
   } catch (err) {
     console.error('Lỗi khi cập nhật địa chỉ:', err);
     res.status(500).json({
       ec: 2,  // Lỗi server
-      total: 0,
-      data: [],
+      data: {},
       msg: 'Lỗi server khi cập nhật địa chỉ',
     });
   } finally {
@@ -273,8 +258,7 @@ async function addOrUpdatePhoneNumber(req, res) {
     if (!phoneNumber) {
       return res.status(400).json({
         ec: 1,  // Lỗi: Số điện thoại không hợp lệ
-        total: 0,
-        data: [],
+        data: {},
         msg: 'Số điện thoại không được để trống',
       });
     }
@@ -288,8 +272,7 @@ async function addOrUpdatePhoneNumber(req, res) {
     if (!user) {
       return res.status(404).json({
         ec: 1,  // Lỗi: Người dùng không tồn tại
-        total: 0,
-        data: [],
+        data: {},
         msg: 'Không tìm thấy người dùng',
       });
     }
@@ -305,8 +288,7 @@ async function addOrUpdatePhoneNumber(req, res) {
     if (result.modifiedCount === 0) {
       return res.status(400).json({
         ec: 1,  // Lỗi: Cập nhật không thành công
-        total: 0,
-        data: [],
+        data: {},
         msg: 'Cập nhật số điện thoại không thành công',
       });
     }
@@ -315,22 +297,20 @@ async function addOrUpdatePhoneNumber(req, res) {
     res.json({
       ec: 0,  // Thành công
       total: 1,
-      data: [{ phoneNumber }],  // Trả về số điện thoại đã được cập nhật
+      data: { phoneNumber },  // Trả về số điện thoại đã được cập nhật
       msg: 'Số điện thoại đã được cập nhật thành công',
     });
   } catch (err) {
     console.error('Lỗi khi cập nhật số điện thoại:', err);
     res.status(500).json({
       ec: 2,  // Lỗi server
-      total: 0,
-      data: [],
+      data: {},
       msg: 'Lỗi server khi cập nhật số điện thoại',
     });
   } finally {
     await client.close();
   }
 }
-
 async function updateUserName(req, res) {
   try {
     await connectToDB();
@@ -340,8 +320,7 @@ async function updateUserName(req, res) {
     if (!newName) {
       return res.status(400).json({
         ec: 1,  // Lỗi: Tên mới không hợp lệ
-        total: 0,
-        data: [],
+        data: {},
         msg: 'Tên mới không được để trống',
       });
     }
@@ -355,8 +334,7 @@ async function updateUserName(req, res) {
     if (!user) {
       return res.status(404).json({
         ec: 1,  // Lỗi: Người dùng không tồn tại
-        total: 0,
-        data: [],
+        data: {},
         msg: 'Không tìm thấy người dùng',
       });
     }
@@ -370,8 +348,7 @@ async function updateUserName(req, res) {
     if (result.modifiedCount === 0) {
       return res.status(400).json({
         ec: 1,  // Lỗi: Cập nhật không thành công
-        total: 0,
-        data: [],
+        data: {},
         msg: 'Cập nhật tên người dùng không thành công',
       });
     }
@@ -380,15 +357,14 @@ async function updateUserName(req, res) {
     res.json({
       ec: 0,  // Thành công
       total: 1,
-      data: [{ name: newName }],  // Trả về tên người dùng đã được cập nhật
+      data: { name: newName },  // Trả về tên người dùng đã được cập nhật
       msg: 'Tên người dùng đã được cập nhật thành công',
     });
   } catch (err) {
     console.error('Lỗi khi cập nhật tên người dùng:', err);
     res.status(500).json({
       ec: 2,  // Lỗi server
-      total: 0,
-      data: [],
+      data: {},
       msg: 'Lỗi server khi cập nhật tên người dùng',
     });
   } finally {
@@ -405,8 +381,7 @@ async function changePass(req, res) {
     if (!oldPassword || !newPassword) {
       return res.status(400).json({
         ec: 1,  // Lỗi thông tin đầu vào
-        total: 0,
-        data: [],
+        data: {},
         msg: 'Thông tin mật khẩu không hợp lệ',
       });
     }
@@ -418,8 +393,7 @@ async function changePass(req, res) {
     if (!user) {
       return res.status(401).json({
         ec: 1,  // Lỗi thông tin người dùng không hợp lệ
-        total: 0,
-        data: [],
+        data: {},
         msg: 'Người dùng không hợp lệ',
       });
     }
@@ -429,8 +403,7 @@ async function changePass(req, res) {
     if (!isValidOldPassword) {
       return res.status(401).json({
         ec: 1,  // Lỗi mật khẩu cũ không đúng
-        total: 0,
-        data: [],
+        data: {},
         msg: 'Mật khẩu cũ không đúng',
       });
     }
@@ -446,8 +419,7 @@ async function changePass(req, res) {
     // Trả về thành công
     return res.json({
       ec: 0,  // Thành công
-      total: 1,
-      data: [],
+      data: {},
       msg: 'Đổi mật khẩu thành công',
     });
   } catch (err) {
@@ -456,18 +428,13 @@ async function changePass(req, res) {
     // Trả về lỗi server
     return res.status(500).json({
       ec: 2,  // Lỗi server
-      total: 0,
-      data: [],
+      data: {},
       msg: 'Lỗi server khi đổi mật khẩu',
     });
   } finally {
     await client.close();
   }
 }
-
-
-
-
 ////////team
 async function createTeam(req, res) {
   try {
@@ -475,33 +442,52 @@ async function createTeam(req, res) {
     const { name, description, sport } = req.body;
 
     if (!name || !description || !sport) {
-      return res.status(400).json({ message: 'Thiếu thông tin cần thiết' });
+      return res.status(400).json({
+        ec: 1,  // Lỗi: Thiếu thông tin cần thiết
+        data: {},
+        msg: 'Thiếu thông tin cần thiết',
+      });
     }
 
-    const teamCollection = client.db('managefield').collection('team');    
+    const teamCollection = client.db('managefield').collection('team');
     const captainId = req.user.userId;
     const objectId = ObjectId.createFromHexString(captainId);
 
+    // Kiểm tra xem người dùng có phải là đội trưởng của đội khác không
     const existingTeam = await teamCollection.findOne({ captain: objectId });
     if (existingTeam) {
-      return res.status(400).json({ message: 'Người tạo đã là đội trưởng của đội khác' });
+      return res.status(400).json({
+        ec: 1,  // Lỗi: Người dùng đã là đội trưởng của đội khác
+        data: {},
+        msg: 'Người tạo đã là đội trưởng của đội khác',
+      });
     }
 
+    // Tạo thông tin đội mới, thêm đội trưởng vào mảng members
     const team = {
       name: name,
       description: description,
       sport: sport,
       captain: objectId,
-      members: []
+      members: [objectId],  // Thêm ID của đội trưởng vào mảng thành viên
     };
 
-    const result = await teamCollection.insertOne(team); 
+    const result = await teamCollection.insertOne(team);
     console.log(`New team added with ID ${result.insertedId}`);
 
-    res.json({ message: 'Team created successfully', teamId: result.insertedId });
+    // Trả về phản hồi thành công dưới dạng RRCommonObject nếu chỉ có 1 dữ liệu trả về
+    res.json({
+      ec: 0,  // Thành công
+      data: { teamId: result.insertedId },  // Trả về một object
+      msg: 'Tạo đội thành công',
+    });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Lỗi tạo đội' });
+    console.error('Lỗi tạo đội:', err);
+    res.status(500).json({
+      ec: 2,  // Lỗi server
+      data: {},
+      msg: 'Lỗi server khi tạo đội',
+    });
   } finally {
     await client.close();
   }
@@ -509,11 +495,16 @@ async function createTeam(req, res) {
 async function addMember(req, res) {
   try {
     await connectToDB();
-    const { memberId } = req.params;
+    const { memberId } = req.body; // Truy cập memberId từ body
     const captainId = req.user.userId;
 
+    // Kiểm tra xem memberId có tồn tại không
     if (!memberId) {
-      return res.status(400).json({ message:'Thiếu thông tin cần thiết' });
+      return res.status(400).json({
+        ec: 1,  // Lỗi thiếu thông tin hoặc memberId không hợp lệ
+        data: {},
+        msg: 'Thiếu thông tin cần thiết hoặc memberId không hợp lệ',
+      });
     }
 
     const teamCollection = client.db('managefield').collection('team');
@@ -523,36 +514,71 @@ async function addMember(req, res) {
     const team = await teamCollection.findOne({ captain: captainObjectId });
 
     if (!team) {
-      return res.status(404).json({ message: 'Đội không tồn tại hoặc người dùng không phải đội trưởng' });
+      return res.status(404).json({
+        ec: 1,  // Lỗi: Đội không tồn tại hoặc người dùng không phải đội trưởng
+        data: {},
+        msg: 'Đội không tồn tại hoặc người dùng không phải đội trưởng',
+      });
     }
 
     const memberObjectId = ObjectId.createFromHexString(memberId);
 
-    if (team.members.includes(memberObjectId)) {
-      return res.status(400).json({ message: 'Thành viên đã có trong đội' });
+    // Kiểm tra xem thành viên đã có trong đội chưa
+    // Sử dụng phương thức `some` để kiểm tra sự tồn tại
+    if (team.members.some(member => member.equals(memberObjectId))) {
+      return res.status(400).json({
+        ec: 1,  // Lỗi: Thành viên đã có trong đội
+        data: {},
+        msg: 'Thành viên đã có trong đội',
+      });
     }
 
+    // Thêm thành viên vào đội
     const result = await teamCollection.updateOne(
       { _id: team._id },
       { $push: { members: memberObjectId } }
     );
 
-    res.json({ message: 'Thành viên được thêm thành công', result });
+    if (result.modifiedCount === 0) {
+      return res.status(400).json({
+        ec: 1,  // Lỗi: Không thêm được thành viên
+        data: {},
+        msg: 'Lỗi khi thêm thành viên',
+      });
+    }
+
+    // Trả về kết quả thành công
+    res.json({
+      ec: 0,  // Thành công
+      total: 1,
+      data: { teamId: team._id, newMemberId: memberObjectId },
+      msg: 'Thành viên được thêm thành công',
+    });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Lỗi thêm thành viên' });
+    console.error('Lỗi khi thêm thành viên:', err);
+    res.status(500).json({
+      ec: 2,  // Lỗi server
+      data: {},
+      msg: 'Lỗi server khi thêm thành viên',
+    });
   } finally {
     await client.close();
   }
 }
+
+
 async function removeMember(req, res) {
   try {
     await connectToDB();
-    const { memberId } = req.params;
+    const { memberId } = req.body;
     const captainId = req.user.userId;
 
     if (!memberId) {
-      return res.status(400).json({ message: 'Thiếu thông tin cần thiết' });
+      return res.status(400).json({
+        ec: 1,  // Lỗi thiếu thông tin
+        data: {},
+        msg: 'Thiếu thông tin cần thiết',
+      });
     }
 
     const teamCollection = client.db('managefield').collection('team');
@@ -562,28 +588,56 @@ async function removeMember(req, res) {
     const team = await teamCollection.findOne({ captain: captainObjectId });
 
     if (!team) {
-      return res.status(404).json({ message: 'Đội không tồn tại hoặc người dùng không phải đội trưởng' });
+      return res.status(404).json({
+        ec: 1,  // Lỗi: Đội không tồn tại hoặc người dùng không phải đội trưởng
+        data: {},
+        msg: 'Đội không tồn tại hoặc người dùng không phải đội trưởng',
+      });
     }
 
     const memberObjectId = ObjectId.createFromHexString(memberId);
 
-    if (!team.members.includes(memberObjectId)) {
-      return res.status(400).json({ message: 'Thành viên không có trong đội' });
+    // Kiểm tra xem thành viên có trong đội hay không
+    if (!team.members.some(member => member.equals(memberObjectId))) {
+      return res.status(400).json({
+        ec: 1,  // Lỗi: Thành viên không có trong đội
+        data: {},
+        msg: 'Thành viên không có trong đội',
+      });
     }
 
+    // Xóa thành viên khỏi đội
     const result = await teamCollection.updateOne(
       { _id: team._id },
       { $pull: { members: memberObjectId } }
     );
 
-    res.json({ message: 'Thành viên đã được xóa thành công', result });
+    if (result.modifiedCount === 0) {
+      return res.status(400).json({
+        ec: 1,  // Lỗi: Không xóa được thành viên
+        data: {},
+        msg: 'Lỗi khi xóa thành viên',
+      });
+    }
+
+    // Trả về kết quả thành công
+    res.json({
+      ec: 0,  // Thành công
+      data: { teamId: team._id, removedMemberId: memberObjectId },
+      msg: 'Thành viên đã được xóa thành công',
+    });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Lỗi xóa thành viên' });
+    console.error('Lỗi khi xóa thành viên:', err);
+    res.status(500).json({
+      ec: 2,  // Lỗi server
+      data: {},
+      msg: 'Lỗi server khi xóa thành viên',
+    });
   } finally {
     await client.close();
   }
 }
+
 async function getTeamInfo(req, res) {
   try {
     await connectToDB();
@@ -592,38 +646,58 @@ async function getTeamInfo(req, res) {
     const teamCollection = client.db('managefield').collection('team');
     const objectId = ObjectId.createFromHexString(userId);
 
-    
+    // Tìm đội mà người dùng là đội trưởng hoặc thành viên
     const team = await teamCollection.findOne({
       $or: [{ captain: objectId }, { members: objectId }]
     });
 
     if (!team) {
-      return res.status(404).json({ message: 'Người dùng không thuộc bất kỳ đội nào' });
+      return res.status(404).json({
+        ec: 1,  // Lỗi: Không tìm thấy đội
+        data: {},
+        msg: 'Người dùng không thuộc bất kỳ đội nào',
+      });
     }
 
     // Trả về thông tin đội
     res.json({
-      teamId: team._id,
-      name: team.name,
-      description: team.description,
-      sport: team.sport,
-      captain: team.captain,
-      members: team.members
+      ec: 0,  // Thành công
+      total: 1,
+      data: {
+        teamId: team._id,
+        name: team.name,
+        description: team.description,
+        sport: team.sport,
+        captain: team.captain,
+        members: team.members
+      },
+      msg: 'Lấy thông tin đội thành công',
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Lỗi lấy thông tin đội' });
+    console.error('Lỗi khi lấy thông tin đội:', err);
+    res.status(500).json({
+      ec: 2,  // Lỗi server
+      data: {},
+      msg: 'Lỗi server khi lấy thông tin đội',
+    });
   } finally {
     await client.close();
   }
 }
+
 //field
 async function searchField(req, res) {
   try {
-    const { date, startTime, endTime, location, sport, capacity } = req.query;
+    const { date, startTime, endTime, location, sport, capacity, page = 1 } = req.query;
+    const limit = 10; // Số kết quả mỗi trang
 
+    // Kiểm tra các tham số bắt buộc
     if (!date || !startTime || !endTime) {
-      return res.status(400).json({ message: 'Missing required parameters' });
+      return res.status(400).json({
+        ec: 1,  // Lỗi thiếu thông tin
+        data: {},
+        msg: 'Thiếu thông tin bắt buộc: date, startTime, hoặc endTime',
+      });
     }
 
     // Chuyển đổi tham số thành Date
@@ -639,21 +713,21 @@ async function searchField(req, res) {
       {
         $match: {
           startTime: { $lt: endDateTime },
-          endTime: { $gt: startDateTime }
-        }
+          endTime: { $gt: startDateTime },
+        },
       },
       {
         $group: {
-          _id: "$field" // Nhóm theo sân
-        }
-      }
+          _id: "$field", // Nhóm theo sân
+        },
+      },
     ]).toArray(); // Chuyển đổi kết quả thành mảng
 
     const bookedFieldIds = bookedFields.map(field => field._id);
 
     // Xây dựng điều kiện tìm kiếm cho các sân trống
     const searchCriteria = {
-      _id: { $nin: bookedFieldIds } // Loại bỏ các sân đã được đặt
+      _id: { $nin: bookedFieldIds }, // Loại bỏ các sân đã được đặt
     };
 
     if (location) {
@@ -667,64 +741,114 @@ async function searchField(req, res) {
     }
 
     const fieldsCollection = client.db('managefield').collection('field');
-    const availableFields = await fieldsCollection.find(searchCriteria).toArray();
 
+    // Tính toán số lượng bản ghi cần bỏ qua
+    const skip = (page - 1) * limit;
+
+    // Lấy danh sách các sân trống với phân trang
+    const availableFields = await fieldsCollection.find(searchCriteria).skip(skip).limit(limit).toArray();
+
+    // Lấy tổng số lượng sân hợp lệ để tính số trang
+    const totalFields = await fieldsCollection.countDocuments(searchCriteria);
+
+    // Kiểm tra và trả về kết quả
     if (availableFields.length === 0) {
-      return res.status(404).json({ message: 'No available fields found' });
+      return res.status(404).json({
+        ec: 1,  // Lỗi không tìm thấy sân
+        data: [],
+        msg: 'Không tìm thấy sân trống',
+      });
     }
 
-    res.status(200).json({ fields: availableFields });
+    // Tính toán tổng số trang
+    const totalPages = Math.ceil(totalFields / limit);
+
+    res.status(200).json({
+      ec: 0,  // Thành công
+      total: availableFields.length,
+      
+      totalPages: totalPages, // Tổng số trang
+      currentPage: parseInt(page), // Trang hiện tại
+      data: availableFields, // Trả về mảng thông tin về các sân hợp lệ
+      msg: 'Tìm thấy các sân trống',
+    });
   } catch (err) {
-    console.error('Error searching fields:', err);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error('Lỗi khi tìm kiếm sân:', err);
+    res.status(500).json({
+      ec: 2,  // Lỗi server
+      data: [],
+      msg: 'Lỗi server nội bộ khi tìm kiếm sân',
+    });
   }
 }
+
+
 //equipmment
 async function searchEquipment(req, res) {
   try {
-    // Lấy tham số sport từ query
-    const { sport } = req.query;
+    // Lấy tham số sport và page từ query
+    const { sport, page = 1 } = req.query;
+    const limit = 10; // Số thiết bị mỗi trang
 
     // Kiểm tra nếu sport không có giá trị
     if (!sport) {
       return res.status(400).json({
-        success: false,
-        message: 'Thiếu tham số sport.',
+        ec: 1,  // Lỗi thiếu thông tin
+        data: {},
+        msg: 'Thiếu tham số sport.',
       });
     }
 
     await connectToDB();
     const equipmentCollection = client.db('managefield').collection('equipment');
 
-    // Tìm kiếm trong cơ sở dữ liệu
-    const equipments = await equipmentCollection.find({ sport }).toArray();
+    // Tính toán số lượng bản ghi cần bỏ qua
+    const skip = (page - 1) * limit;
+
+    // Tìm kiếm thiết bị trong cơ sở dữ liệu với phân trang
+    const equipments = await equipmentCollection.find({ sport }).skip(skip).limit(limit).toArray();
+
+    // Lấy tổng số lượng thiết bị để tính số trang
+    const totalEquipments = await equipmentCollection.countDocuments({ sport });
 
     // Kiểm tra nếu không tìm thấy thiết bị nào
     if (equipments.length === 0) {
       return res.status(404).json({
-        success: false,
-        message: 'Không tìm thấy thiết bị nào.',
+        ec: 1,  // Lỗi không tìm thấy thiết bị
+        data: {},
+        msg: 'Không tìm thấy thiết bị nào.',
       });
     }
 
+    // Tính toán tổng số trang
+    const totalPages = Math.ceil(totalEquipments / limit);
+
     // Trả về kết quả tìm kiếm
     res.status(200).json({
-      equipment: equipments,
+      ec: 0,  // Thành công
+      total: equipments.length,
+      totalPages: totalPages, // Tổng số trang
+      currentPage: parseInt(page), // Trang hiện tại
+      data: equipments, // Trả về mảng thông tin về các thiết bị
+      msg: 'Tìm thấy thiết bị.',
     });
   } catch (error) {
     // Xử lý lỗi
-    console.error('Error searching equipment:', error);
+    console.error('Lỗi khi tìm kiếm thiết bị:', error);
     res.status(500).json({
-      success: false,
-      message: 'Đã xảy ra lỗi khi tìm kiếm thiết bị.',
+      ec: 2,  // Lỗi server
+      data: [],
+      msg: 'Đã xảy ra lỗi khi tìm kiếm thiết bị.',
     });
   }
 }
+
 //referee
 async function searchReferee(req, res) {
   try {
-    // Lấy tham số sport và area từ query
-    const { sport, area } = req.query;
+    // Lấy tham số sport, area và page từ query
+    const { sport, area, page = 1 } = req.query;
+    const limit = 10; // Số trọng tài mỗi trang
 
     // Xây dựng điều kiện tìm kiếm
     const searchCriteria = {};
@@ -742,38 +866,55 @@ async function searchReferee(req, res) {
     await connectToDB();
     const refereeCollection = client.db('managefield').collection('referee');
 
-    // Tìm kiếm trong cơ sở dữ liệu
-    const referees = await refereeCollection.find(searchCriteria).toArray();
+    // Tính toán số lượng bản ghi cần bỏ qua
+    const skip = (page - 1) * limit;
+
+    // Tìm kiếm trọng tài trong cơ sở dữ liệu với phân trang
+    const referees = await refereeCollection.find(searchCriteria).skip(skip).limit(limit).toArray();
+
+    // Lấy tổng số lượng trọng tài để tính số trang
+    const totalReferees = await refereeCollection.countDocuments(searchCriteria);
 
     // Kiểm tra nếu không tìm thấy trọng tài nào
     if (referees.length === 0) {
       return res.status(404).json({
-        success: false,
-        message: 'Không tìm thấy trọng tài nào.',
+        ec: 1,  // Lỗi không tìm thấy trọng tài
+        data: {},
+        msg: 'Không tìm thấy trọng tài nào.',
       });
     }
 
+    // Tính toán tổng số trang
+    const totalPages = Math.ceil(totalReferees / limit);
+
     // Trả về kết quả tìm kiếm
     res.status(200).json({
-      success: true,
-      referees: referees,
+      ec: 0,  // Thành công
+      total: referees.length,
+      totalPages: totalPages, // Tổng số trang
+      currentPage: parseInt(page), // Trang hiện tại
+      data: referees, // Trả về mảng thông tin về các trọng tài
+      msg: 'Tìm thấy trọng tài.',
     });
   } catch (error) {
     // Xử lý lỗi
-    console.error('Error searching referees:', error);
+    console.error('Lỗi khi tìm kiếm trọng tài:', error);
     res.status(500).json({
-      success: false,
-      message: 'Đã xảy ra lỗi khi tìm kiếm trọng tài.',
+      ec: 2,  // Lỗi server
+      data: {},
+      msg: 'Đã xảy ra lỗi khi tìm kiếm trọng tài.',
     });
   }
 }
+
 //trainer
 async function searchTrainer(req, res) {
   try {
-    
-    const { sport, area } = req.query;
+    // Lấy tham số sport, area và page từ query
+    const { sport, area, page = 1 } = req.query;
+    const limit = 10; // Số trọng tài mỗi trang
 
-   
+    // Xây dựng điều kiện tìm kiếm
     const searchCriteria = {};
     
     if (sport) {
@@ -781,7 +922,7 @@ async function searchTrainer(req, res) {
     }
     
     if (area) {
-     
+      // area có thể là một chuỗi phân tách bằng dấu phẩy, chuyển đổi thành mảng
       const areaArray = area.split(',').map(a => a.trim());
       searchCriteria.area = { $in: areaArray };
     }
@@ -789,57 +930,74 @@ async function searchTrainer(req, res) {
     await connectToDB();
     const refereeCollection = client.db('managefield').collection('trainer');
 
-    
-    const referees = await refereeCollection.find(searchCriteria).toArray();
+    // Tính toán số lượng bản ghi cần bỏ qua
+    const skip = (page - 1) * limit;
 
+    // Tìm kiếm trọng tài trong cơ sở dữ liệu với phân trang
+    const referees = await refereeCollection.find(searchCriteria).skip(skip).limit(limit).toArray();
 
+    // Lấy tổng số lượng trọng tài để tính số trang
+    const totalReferees = await refereeCollection.countDocuments(searchCriteria);
+
+    // Kiểm tra nếu không tìm thấy trọng tài nào
     if (referees.length === 0) {
       return res.status(404).json({
-        success: false,
-        message: 'Không tìm thấy.',
+        ec: 1,  // Lỗi không tìm thấy trọng tài
+        data: {},
+        msg: 'Không tìm thấy trainer nào.',
       });
     }
 
-   
+    // Tính toán tổng số trang
+    const totalPages = Math.ceil(totalReferees / limit);
+
+    // Trả về kết quả tìm kiếm
     res.status(200).json({
-      success: true,
-      referees: referees,
+      ec: 0,  // Thành công
+      total: referees.length,
+      totalPages: totalPages, // Tổng số trang
+      currentPage: parseInt(page), // Trang hiện tại
+      data: referees, // Trả về mảng thông tin về các trọng tài
+      msg: 'Tìm thấy trainer.',
     });
   } catch (error) {
     // Xử lý lỗi
-    console.error('Error searching:', error);
+    console.error('Lỗi khi tìm kiếm :', error);
     res.status(500).json({
-      success: false,
-      message: 'Đã xảy ra lỗi khi tìm kiếm.',
+      ec: 2,  // Lỗi server
+      data: {},
+      msg: 'Đã xảy ra lỗi khi tìm kiếm.',
     });
   }
 }
 //booking
 async function createBooking(req, res) {
   try {
-    // Lấy dữ liệu từ body request
-    const {  fieldId, startTime, endTime, equipmentId, refereeId, trainerId } = req.body;
-    const userId = req.user.userId
-    // Kiểm tra các tham số cần thiết
-    if ( !fieldId || !startTime || !endTime) {
-      return res.status(400).json({
-        success: false,
-        message: 'Thiếu thông tin cần thiết.',
-      });
+    const { fieldId, startTime, endTime, equipmentId, refereeId, trainerId } = req.body;
+    const userId = req.user.userId;
+
+    if (!fieldId || !startTime || !endTime) {
+      return res.status(400).json({ ec: 1, msg: 'Thiếu thông tin cần thiết.' });
     }
 
-    // Kiểm tra nếu thời gian đặt sân hợp lệ
     if (new Date(startTime) >= new Date(endTime)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Thời gian kết thúc phải sau thời gian bắt đầu.',
-      });
+      return res.status(400).json({ ec: 1, msg: 'Thời gian kết thúc phải sau thời gian bắt đầu.' });
     }
 
-    // Kết nối đến cơ sở dữ liệu
     await connectToDB();
 
-    // Khởi tạo biến tính tổng giá tiền
+    // Kiểm tra xem sân đã có người đặt vào khung giờ này hay chưa
+    const bookingsCollection = client.db('managefield').collection('booking');
+    const isBooked = await bookingsCollection.findOne({
+      field: ObjectId.createFromHexString(fieldId),
+      $or: [
+        { startTime: { $lt: new Date(endTime) }, endTime: { $gt: new Date(startTime) } }
+      ]
+    });
+
+    if (isBooked) {
+      return res.status(409).json({ ec: 1, msg: 'Sân đã được đặt vào khung giờ này.' });
+    }
     let totalPrice = 0;
 
     // Tìm thông tin sân
@@ -847,8 +1005,8 @@ async function createBooking(req, res) {
     const field = await fieldCollection.findOne({ _id: ObjectId.createFromHexString(fieldId) });
     if (!field) {
       return res.status(404).json({
-        success: false,
-        message: 'Sân không tồn tại.',
+        ec: 3,  // Lỗi sân không tồn tại
+        msg: 'Sân không tồn tại.',
       });
     }
     totalPrice += field.price;
@@ -874,46 +1032,30 @@ async function createBooking(req, res) {
     // Tìm thông tin huấn luyện viên nếu có
     if (trainerId) {
       const trainerCollection = client.db('managefield').collection('trainer');
-      const trainer = await trainerCollection.findOne({ _id:ObjectId.createFromHexString(trainerId) });
+      const trainer = await trainerCollection.findOne({ _id: ObjectId.createFromHexString(trainerId) });
       if (trainer) {
         totalPrice += trainer.price;
       }
     }
-
-    // Tạo một booking mới
+    
     const newBooking = new Booking({
       user: ObjectId.createFromHexString(userId),
-      field: fieldId,
+      field: ObjectId.createFromHexString(fieldId),
       startTime: new Date(startTime),
       endTime: new Date(endTime),
-      equipment: equipmentId ? ObjectId.createFromHexString(equipmentId) : null,
-      referee: refereeId ? ObjectId.createFromHexString(refereeId) : null,
-      trainer: trainerId ? ObjectId.createFromHexString(trainerId) : null,
       totalPrice,
       status: 'unpaid',
     });
 
-    // Lưu vào cơ sở dữ liệu
-    const bookingsCollection=client.db('managefield').collection('booking')
-    const result= bookingsCollection.insertOne(newBooking);
+    const result = await bookingsCollection.insertOne(newBooking);
+    res.status(200).json({ ec: 0, data: { bookingId: result.insertedId }, msg: 'Đặt sân thành công.' });
 
-    // Trả về kết quả thành công
-    res.status(201).json({
-      result: result,
-      message: 'Đặt sân thành công.',
-      booking: newBooking,
-    });
   } catch (error) {
-    // Xử lý lỗi
     console.error('Error booking field:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Đã xảy ra lỗi khi đặt sân.',
-    });
+    res.status(500).json({ ec: 2, msg: 'Đã xảy ra lỗi khi đặt sân.' });
   }
 }
 //matching
- 
 async function sendMatchRequest(req, res) {
   try {
     const { teamId, fieldId, startTime, endTime, message, max_number } = req.body;
@@ -921,21 +1063,40 @@ async function sendMatchRequest(req, res) {
     // Kiểm tra dữ liệu cần thiết
     if (!teamId || !fieldId || !startTime || !endTime || !max_number) {
       return res.status(400).json({
-        success: false,
-        message: 'Thiếu thông tin cần thiết.',
+        ec: 1, // Lỗi thiếu thông tin
+        msg: 'Thiếu thông tin cần thiết.',
       });
     }
 
     // Kiểm tra nếu thời gian bắt đầu và kết thúc hợp lệ
     if (new Date(startTime) >= new Date(endTime)) {
       return res.status(400).json({
-        success: false,
-        message: 'Thời gian kết thúc phải sau thời gian bắt đầu.',
+        ec: 1, // Lỗi thời gian không hợp lệ
+        msg: 'Thời gian kết thúc phải sau thời gian bắt đầu.',
       });
     }
 
     await connectToDB();
-    const matchCollection= client.db('managefield').collection('matching')
+    const matchCollection = client.db('managefield').collection('matching');
+
+    // Kiểm tra xem sân đã có yêu cầu nào trong khoảng thời gian này chưa
+    const existingRequest = await matchCollection.findOne({
+      fieldId,
+      $and: [
+        {
+          startTime: { $lt: new Date(endTime) }, // Yêu cầu bắt đầu trước thời gian kết thúc của yêu cầu mới
+          endTime: { $gt: new Date(startTime) } // Yêu cầu kết thúc sau thời gian bắt đầu của yêu cầu mới
+        }
+      ]
+    });
+
+    if (existingRequest) {
+      return res.status(400).json({
+        ec: 1, // Lỗi đã có yêu cầu
+        msg: 'Sân đã có yêu cầu trong khoảng thời gian này.',
+      });
+    }
+
     // Tạo một yêu cầu mới
     const newRequest = new Matching({
       teamId,
@@ -944,50 +1105,79 @@ async function sendMatchRequest(req, res) {
       endTime: new Date(endTime),
       message: message || '', // Đảm bảo message không null
       max_number,
-      matchedUser: [], 
-      matchedCount: 0// Khởi tạo mảng matchedUser rỗng
+      matchedUser: [], // Khởi tạo mảng matchedUser rỗng
+      matchedCount: 0,
     });
 
     // Lưu vào cơ sở dữ liệu
-    const result=await matchCollection.insertOne(newRequest);
+    const result = await matchCollection.insertOne(newRequest);
 
     res.status(201).json({
-      matching_id :result._id,
-      message: 'Gửi yêu cầu thành công.',
-      matchRequest: newRequest,
+      ec: 0, // Thành công
+      data: { _id: result.insertedId },
+      msg: 'Gửi yêu cầu thành công.',
     });
   } catch (error) {
     console.error('Error sending match request:', error);
     res.status(500).json({
-      success: false,
-      message: 'Đã xảy ra lỗi khi gửi yêu cầu.',
+      ec: 2, // Lỗi server
+      msg: 'Đã xảy ra lỗi khi gửi yêu cầu.',
     });
   }
 }
+
+
+
 async function getMatchRequests(req, res) {
   try {
+    // Kết nối đến cơ sở dữ liệu
     await connectToDB();
     const currentTime = new Date();
     const matchRequestCollection = client.db('managefield').collection('matching');
 
-    // Lấy danh sách các yêu cầu
-    const requests = await matchRequestCollection.find({ startTime: { $gt: currentTime } }).toArray();
+    // Lấy tham số phân trang từ URL parameters
+    const page = parseInt(req.params.page) || 1; // Mặc định là trang 1 nếu không có tham số
+    const limit = parseInt(req.params.limit) || 10; // Mặc định là 10 yêu cầu trên mỗi trang nếu không có tham số
+
+    // Tính toán số lượng yêu cầu cần bỏ qua
+    const skip = (page - 1) * limit;
 
     // Lấy danh sách các yêu cầu với startTime chưa diễn ra
-   
+    const requests = await matchRequestCollection.find({
+      startTime: { $gt: currentTime } // Lọc các yêu cầu có startTime lớn hơn thời gian hiện tại
+    })
+    .skip(skip) // Bỏ qua số yêu cầu tương ứng với trang
+    .limit(limit) // Giới hạn số yêu cầu trên mỗi trang
+    .toArray();
 
+    // Tính tổng số yêu cầu để tính toán số trang
+    const totalRequests = await matchRequestCollection.countDocuments({
+      startTime: { $gt: currentTime } // Đếm tổng số yêu cầu chưa diễn ra
+    });
+
+    const totalPages = Math.ceil(totalRequests / limit); // Tính số trang
+
+    // Trả về danh sách yêu cầu với thông tin phân trang
     res.status(200).json({
-      success: true,
-      requests,
+      ec: 0, // Thành công
+      data: requests, // Dữ liệu yêu cầu
+      pagination: {
+        totalRequests, // Tổng số yêu cầu
+        totalPages, // Tổng số trang
+        currentPage: page, // Trang hiện tại
+        limit, // Số yêu cầu trên mỗi trang
+      },
+      msg: 'Lấy danh sách yêu cầu thành công.',
     });
   } catch (error) {
     console.error('Error getting match requests:', error);
     res.status(500).json({
-      success: false,
-      message: 'Đã xảy ra lỗi khi lấy danh sách yêu cầu.',
+      ec: 2, // Lỗi server
+      msg: 'Đã xảy ra lỗi khi lấy danh sách yêu cầu.',
     });
   }
 }
+
 
 
 
@@ -998,21 +1188,22 @@ async function respondToMatchRequest(req, res) {
     // Kiểm tra các tham số cần thiết
     if (!matchingId || !quantity) {
       return res.status(400).json({
-        success: false,
-        message: 'Thiếu thông tin cần thiết.',
+        ec: 1, // Lỗi thiếu thông tin
+        msg: 'Thiếu thông tin cần thiết.',
       });
     }
 
+    // Kết nối đến cơ sở dữ liệu
     await connectToDB();
     const matchRequestCollection = client.db('managefield').collection('matching');
 
     // Tìm kiếm yêu cầu matching theo ID
-    const matchRequest = await matchRequestCollection.find({_id:  ObjectId.createFromHexString(matchingId)});
+    const matchRequest = await matchRequestCollection.findOne({ _id: ObjectId.createFromHexString(matchingId) });
 
     if (!matchRequest) {
       return res.status(404).json({
-        success: false,
-        message: 'Không tìm thấy yêu cầu matching.',
+        ec: 1, // Lỗi không tìm thấy yêu cầu
+        msg: 'Không tìm thấy yêu cầu matching.',
       });
     }
 
@@ -1021,8 +1212,8 @@ async function respondToMatchRequest(req, res) {
     // Kiểm tra nếu số lượng yêu cầu vượt quá số slot còn lại
     if (remainingSlots < quantity) {
       return res.status(400).json({
-        success: false,
-        message: 'Số lượng yêu cầu vượt quá số slot còn lại.',
+        ec: 1, // Lỗi vượt quá slot
+        msg: 'Số lượng yêu cầu vượt quá số slot còn lại.',
       });
     }
 
@@ -1030,23 +1221,28 @@ async function respondToMatchRequest(req, res) {
     const updateData = {
       $push: { matchedUser: { userId: req.user.userId, quantity: quantity } },
       $inc: { matchedCount: quantity }, // Cộng thêm quantity vào matchedCount
-      $set: { updatedAt: new Date() }
+      $set: { updatedAt: new Date() },
     };
 
-    const result=await matchRequestCollection.updateOne({ _id: ObjectId.createFromHexString(matchingId) }, updateData);
+    const result = await matchRequestCollection.updateOne(
+      { _id: ObjectId.createFromHexString(matchingId) },
+      updateData
+    );
 
     res.status(200).json({
-      success: true,
-      message: result,
+      ec: 0, // Thành công
+      data: result, // Trả về thông tin cập nhật
+      msg: 'Phản hồi yêu cầu thành công.',
     });
   } catch (error) {
     console.error('Error responding to match request:', error);
     res.status(500).json({
-      success: false,
-      message: 'Đã xảy ra lỗi khi phản hồi yêu cầu.',
+      ec: 2, // Lỗi server
+      msg: 'Đã xảy ra lỗi khi phản hồi yêu cầu.',
     });
   }
 }
+
 
 
 

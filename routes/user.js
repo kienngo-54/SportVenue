@@ -19,8 +19,8 @@ router.patch('/name', verifyToken, updateUserName);
 router.patch('/changepassword',verifyToken,changePass);
 //team
 router.post('/team',verifyToken,createTeam);
-router.patch('/team/:id',verifyToken,addMember);
-router.delete('/team/:id',verifyToken,removeMember);
+router.patch('/team',verifyToken,addMember);
+router.delete('/team',verifyToken,removeMember);
 router.get('/team',verifyToken,getTeamInfo);
 //field
 router.get('/field',verifyToken,searchField);

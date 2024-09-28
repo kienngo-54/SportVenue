@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { registerUser,loginUser,getUserInfo,changePassword,addOrUpdateAddress,addOrUpdatePhoneNumber,updateUserName,
+const { registerUser,loginUser,getUserInfo,changePass,addOrUpdateAddress,addOrUpdatePhoneNumber,updateUserName,
   createTeam,addMember,removeMember,getTeamInfo,
   searchField,
   searchEquipment,
@@ -16,7 +16,7 @@ router.get('/me',verifyToken,getUserInfo);
 router.patch('/phone', verifyToken, addOrUpdatePhoneNumber);
 router.patch('/address', verifyToken, addOrUpdateAddress);
 router.patch('/name', verifyToken, updateUserName);
-router.post('/changepassword',verifyToken,changePassword);
+router.patch('/changepassword',verifyToken,changePass);
 //team
 router.post('/team',verifyToken,createTeam);
 router.patch('/team/:id',verifyToken,addMember);

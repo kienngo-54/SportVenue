@@ -34,24 +34,54 @@ async function registerUser(req, res) {
     await connectToDB();
     const { username, email, password } = req.body;
 
+    // Kiểm tra nếu không đủ thông tin đầu vào
     if (!username || !email || !password) {
-      return res.status(400).json({ message: 'Invalid user input' });
+      return res.status(400).json({
+        ec: 1,  // Lỗi dữ liệu đầu vào
+        total: 0,
+        data: [],
+        msg: 'Thông tin người dùng không hợp lệ',
+      });
     }
+
     const usersCollection = client.db('managefield').collection('users');
-    const existingUser = await usersCollection.findOne({email});
+    const existingUser = await usersCollection.findOne({ email });
+
+    // Kiểm tra nếu người dùng đã tồn tại
     if (existingUser) {
-      return res.status(400).json({ message: 'User already exists' });
+      return res.status(400).json({
+        ec: 1,  // Lỗi người dùng đã tồn tại
+        total: 0,
+        data: [],
+        msg: 'Người dùng đã tồn tại',
+      });
     }
+
+    // Hash password và tạo người dùng mới
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const user = new User({ username, email, salt, hashedPassword, role:'user' });
+    // Tạo đối tượng người dùng mới
+    const user = { username, email, salt, hashedPassword, role: 'user' };
     const result = await usersCollection.insertOne(user);
-    console.log(`New user added with ID ${result.insertedId}`);
-    res.json({ message: 'User created successfully' });
+
+    // Trả về kết quả thành công
+    return res.json({
+      ec: 0,  // Thành công
+      total: 1,  // Tổng số kết quả trả về (1 người dùng)
+      data: [{ userId: result.insertedId }],  // Dữ liệu trả về chứa ID người dùng mới
+      msg: 'Tạo người dùng thành công',
+    });
   } catch (err) {
-    console.error('Error creating user:', err);
-    res.status(500).json({ message: 'Error creating user:', err });
+    console.error('Lỗi khi tạo người dùng:', err);
+
+    // Trả về lỗi server
+    return res.status(500).json({
+      ec: 2,  // Lỗi server
+      total: 0,
+      data: [],
+      msg: 'Lỗi server khi tạo người dùng',
+    });
   } finally {
     await client.close();
   }
@@ -61,75 +91,68 @@ async function loginUser(req, res) {
     await connectToDB();
     const { email, password } = req.body;
 
+    // Kiểm tra nếu không có email hoặc password
     if (!email || !password) {
-      return res.status(400).json({ message: 'Invalid login credentials' });
+      return res.status(400).json({
+        ec: 1,  // Lỗi thông tin đăng nhập
+        total: 0,
+        data: [],
+        msg: 'Thông tin đăng nhập không hợp lệ',
+      });
     }
 
     const usersCollection = client.db('managefield').collection('users');
     const user = await usersCollection.findOne({ email });
+
+    // Kiểm tra nếu không tìm thấy người dùng
     if (!user) {
-      return res.status(401).json({ message: 'Invalid email or password' });
+      return res.status(401).json({
+        ec: 1,  // Lỗi email hoặc mật khẩu không đúng
+        total: 0,
+        data: [],
+        msg: 'Email hoặc mật khẩu không đúng',
+      });
     }
 
-    const hashedPassword = user.hashedPassword;
-    const salt = user.salt;
-    const isValidPassword = await bcrypt.compare(password, hashedPassword);
+    // Kiểm tra mật khẩu
+    const isValidPassword = await bcrypt.compare(password, user.hashedPassword);
     if (!isValidPassword) {
-      return res.status(401).json({ message: 'Invalid email or password' });
+      return res.status(401).json({
+        ec: 1,  // Lỗi email hoặc mật khẩu không đúng
+        total: 0,
+        data: [],
+        msg: 'Email hoặc mật khẩu không đúng',
+      });
     }
 
-    // Generate a JSON Web Token (JWT) for the user
+    // Tạo token cho người dùng
     const token = jwt.sign({ userId: user._id, email: user.email, role: user.role }, process.env.SECRET_KEY, {
-      expiresIn: '3h'
+      expiresIn: '3h',
     });
 
-    res.json({ message: 'Login successful', token });
+    // Trả về thông tin thành công và token
+    return res.json({
+      ec: 0,  // Thành công
+      total: 1,
+      data: [{ token, userId: user._id, email: user.email, role: user.role }],
+      msg: 'Đăng nhập thành công',
+    });
   } catch (err) {
-    console.error('Error logging in user:', err);
-    res.status(500).json({ message: 'Error logging in user:', err });
+    console.error('Lỗi khi đăng nhập người dùng:', err);
+
+    // Trả về lỗi server
+    return res.status(500).json({
+      ec: 2,  // Lỗi server
+      total: 0,
+      data: [],
+      msg: 'Lỗi server khi đăng nhập người dùng',
+    });
   } finally {
     await client.close();
   }
 }
 
-async function changePassword(req, res) {
-  try {
-    await connectToDB();
-    const { oldPassword, newPassword } = req.body;
-    const email = req.user.email; // assuming req.user is set from the JWT token
 
-    if (!oldPassword || !newPassword) {
-      return res.status(400).json({ message: 'Invalid password credentials' });
-    }
-
-    const usersCollection = client.db('managefield').collection('users');
-    const user = await usersCollection.findOne({ email });
-    if (!user) {
-      return res.status(401).json({ message: 'Invalid user' });
-    }
-
-    const hashedOldPassword = user.hashedPassword;
-    const salt = user.salt;
-    const isValidOldPassword = await bcrypt.compare(oldPassword, hashedOldPassword);
-    if (!isValidOldPassword) {
-      return res.status(401).json({ message: 'Invalid old password' });
-    }
-
-    const hashedNewPassword = await bcrypt.hash(newPassword, salt);
-    
-    const filter = { _id: new ObjectId(user._id) };
-    const update = { $set: { hashedPassword: hashedNewPassword } };
-    
-    await usersCollection.updateOne(filter, update);
-
-    res.json({ message: 'Password changed successfully' });
-  }catch (err) {
-    console.error('Error changing password:', err);
-    res.status(500).json({ message: 'Error changing password' });
-  } finally {
-    await client.close();
-  }
-}
 async function getUserInfo(req, res) {
   try {
     await connectToDB();
@@ -141,15 +164,36 @@ async function getUserInfo(req, res) {
     // Tìm người dùng theo userId
     const user = await usersCollection.findOne({ _id: objectId });
 
+    // Nếu không tìm thấy người dùng
     if (!user) {
-      return res.status(404).json({ message: 'Người dùng không tồn tại' });
+      return res.status(404).json({
+        ec: 1,  // Lỗi: Không tìm thấy người dùng
+        total: 0,
+        data: [],
+        msg: 'Người dùng không tồn tại',
+      });
     }
 
-    // Trả về thông tin người dùng (không trả về mật khẩu)
-    res.status(200).json(user);
+    // Loại bỏ mật khẩu và các thông tin nhạy cảm trước khi trả về
+    const { hashedPassword, salt, ...userInfo } = user;
+
+    // Trả về thông tin người dùng
+    res.status(200).json({
+      ec: 0,  // Thành công
+      total: 1,
+      data: [userInfo],
+      msg: 'Lấy thông tin người dùng thành công',
+    });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Lỗi lấy thông tin cá nhân' });
+    console.error('Lỗi lấy thông tin người dùng:', err);
+
+    // Trả về lỗi server
+    res.status(500).json({
+      ec: 2,  // Lỗi server
+      total: 0,
+      data: [],
+      msg: 'Lỗi server khi lấy thông tin người dùng',
+    });
   } finally {
     await client.close();
   }
@@ -161,7 +205,12 @@ async function addOrUpdateAddress(req, res) {
     const userId = req.user.userId; // Lấy userId từ JWT token
 
     if (!address) {
-      return res.status(400).json({ message: 'Địa chỉ không được để trống' });
+      return res.status(400).json({
+        ec: 1,  // Lỗi: Địa chỉ không hợp lệ
+        total: 0,
+        data: [],
+        msg: 'Địa chỉ không được để trống',
+      });
     }
 
     const usersCollection = client.db('managefield').collection('users');
@@ -171,13 +220,16 @@ async function addOrUpdateAddress(req, res) {
     const user = await usersCollection.findOne({ _id: objectId });
 
     if (!user) {
-      return res.status(404).json({ message: 'Không tìm thấy người dùng' });
+      return res.status(404).json({
+        ec: 1,  // Lỗi: Người dùng không tồn tại
+        total: 0,
+        data: [],
+        msg: 'Không tìm thấy người dùng',
+      });
     }
 
     // Cập nhật hoặc thêm địa chỉ
-    const update = user.address 
-      ? { $set: { address: address } } // Cập nhật địa chỉ hiện có
-      : { $set: { address: address } }; // Thêm địa chỉ mới
+    const update = { $set: { address: address } };
 
     const result = await usersCollection.updateOne(
       { _id: objectId },
@@ -185,13 +237,29 @@ async function addOrUpdateAddress(req, res) {
     );
 
     if (result.modifiedCount === 0) {
-      return res.status(400).json({ message: 'Cập nhật địa chỉ không thành công' });
+      return res.status(400).json({
+        ec: 1,  // Lỗi: Cập nhật không thành công
+        total: 0,
+        data: [],
+        msg: 'Cập nhật địa chỉ không thành công',
+      });
     }
 
-    res.json({ message: 'Địa chỉ đã được cập nhật thành công' });
+    // Trả về kết quả thành công
+    res.json({
+      ec: 0,  // Thành công
+      total: 1,
+      data: [{ address }],
+      msg: 'Địa chỉ đã được cập nhật thành công',
+    });
   } catch (err) {
     console.error('Lỗi khi cập nhật địa chỉ:', err);
-    res.status(500).json({ message: 'Lỗi khi cập nhật địa chỉ' });
+    res.status(500).json({
+      ec: 2,  // Lỗi server
+      total: 0,
+      data: [],
+      msg: 'Lỗi server khi cập nhật địa chỉ',
+    });
   } finally {
     await client.close();
   }
@@ -199,11 +267,16 @@ async function addOrUpdateAddress(req, res) {
 async function addOrUpdatePhoneNumber(req, res) {
   try {
     await connectToDB();
-    const phoneNumber  = req.body.phoneNumber;
+    const phoneNumber = req.body.phoneNumber;
     const userId = req.user.userId; // Lấy userId từ JWT token
-    console.log(phoneNumber);
+
     if (!phoneNumber) {
-      return res.status(400).json({ message: 'Số điện thoại không được để trống' });
+      return res.status(400).json({
+        ec: 1,  // Lỗi: Số điện thoại không hợp lệ
+        total: 0,
+        data: [],
+        msg: 'Số điện thoại không được để trống',
+      });
     }
 
     const usersCollection = client.db('managefield').collection('users');
@@ -213,13 +286,16 @@ async function addOrUpdatePhoneNumber(req, res) {
     const user = await usersCollection.findOne({ _id: objectId });
 
     if (!user) {
-      return res.status(404).json({ message: 'Không tìm thấy người dùng' });
+      return res.status(404).json({
+        ec: 1,  // Lỗi: Người dùng không tồn tại
+        total: 0,
+        data: [],
+        msg: 'Không tìm thấy người dùng',
+      });
     }
 
-    // Cập nhật hoặc thêm số điện thoại
-    const update = user.phoneNumber 
-      ? { $set: { phoneNumber: phoneNumber } } // Cập nhật số điện thoại hiện có
-      : { $set: { phoneNumber: phoneNumber } }; // Thêm số điện thoại mới
+    // Cập nhật số điện thoại
+    const update = { $set: { phoneNumber: phoneNumber } };
 
     const result = await usersCollection.updateOne(
       { _id: objectId },
@@ -227,17 +303,34 @@ async function addOrUpdatePhoneNumber(req, res) {
     );
 
     if (result.modifiedCount === 0) {
-      return res.status(400).json({ message: 'Cập nhật số điện thoại không thành công' });
+      return res.status(400).json({
+        ec: 1,  // Lỗi: Cập nhật không thành công
+        total: 0,
+        data: [],
+        msg: 'Cập nhật số điện thoại không thành công',
+      });
     }
 
-    res.json({ message: 'Số điện thoại đã được cập nhật thành công' });
+    // Trả về kết quả thành công
+    res.json({
+      ec: 0,  // Thành công
+      total: 1,
+      data: [{ phoneNumber }],  // Trả về số điện thoại đã được cập nhật
+      msg: 'Số điện thoại đã được cập nhật thành công',
+    });
   } catch (err) {
     console.error('Lỗi khi cập nhật số điện thoại:', err);
-    res.status(500).json({ message: 'Lỗi khi cập nhật số điện thoại' });
+    res.status(500).json({
+      ec: 2,  // Lỗi server
+      total: 0,
+      data: [],
+      msg: 'Lỗi server khi cập nhật số điện thoại',
+    });
   } finally {
     await client.close();
   }
 }
+
 async function updateUserName(req, res) {
   try {
     await connectToDB();
@@ -245,7 +338,12 @@ async function updateUserName(req, res) {
     const userId = req.user.userId; // Lấy userId từ JWT token
 
     if (!newName) {
-      return res.status(400).json({ message: 'Tên mới không được để trống' });
+      return res.status(400).json({
+        ec: 1,  // Lỗi: Tên mới không hợp lệ
+        total: 0,
+        data: [],
+        msg: 'Tên mới không được để trống',
+      });
     }
 
     const usersCollection = client.db('managefield').collection('users');
@@ -255,7 +353,12 @@ async function updateUserName(req, res) {
     const user = await usersCollection.findOne({ _id: objectId });
 
     if (!user) {
-      return res.status(404).json({ message: 'Không tìm thấy người dùng' });
+      return res.status(404).json({
+        ec: 1,  // Lỗi: Người dùng không tồn tại
+        total: 0,
+        data: [],
+        msg: 'Không tìm thấy người dùng',
+      });
     }
 
     // Cập nhật tên người dùng
@@ -265,13 +368,98 @@ async function updateUserName(req, res) {
     );
 
     if (result.modifiedCount === 0) {
-      return res.status(400).json({ message: 'Cập nhật tên người dùng không thành công' });
+      return res.status(400).json({
+        ec: 1,  // Lỗi: Cập nhật không thành công
+        total: 0,
+        data: [],
+        msg: 'Cập nhật tên người dùng không thành công',
+      });
     }
 
-    res.json({ message: 'Tên người dùng đã được cập nhật thành công' });
+    // Trả về kết quả thành công
+    res.json({
+      ec: 0,  // Thành công
+      total: 1,
+      data: [{ name: newName }],  // Trả về tên người dùng đã được cập nhật
+      msg: 'Tên người dùng đã được cập nhật thành công',
+    });
   } catch (err) {
     console.error('Lỗi khi cập nhật tên người dùng:', err);
-    res.status(500).json({ message: 'Lỗi khi cập nhật tên người dùng' });
+    res.status(500).json({
+      ec: 2,  // Lỗi server
+      total: 0,
+      data: [],
+      msg: 'Lỗi server khi cập nhật tên người dùng',
+    });
+  } finally {
+    await client.close();
+  }
+}
+async function changePass(req, res) {
+  try {
+    await connectToDB();
+    const { oldPassword, newPassword } = req.body;
+    const email = req.user.email; // assuming req.user is set from the JWT token
+
+    // Kiểm tra đầu vào hợp lệ
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({
+        ec: 1,  // Lỗi thông tin đầu vào
+        total: 0,
+        data: [],
+        msg: 'Thông tin mật khẩu không hợp lệ',
+      });
+    }
+
+    const usersCollection = client.db('managefield').collection('users');
+    const user = await usersCollection.findOne({ email });
+
+    // Kiểm tra nếu không tìm thấy người dùng
+    if (!user) {
+      return res.status(401).json({
+        ec: 1,  // Lỗi thông tin người dùng không hợp lệ
+        total: 0,
+        data: [],
+        msg: 'Người dùng không hợp lệ',
+      });
+    }
+
+    // Kiểm tra mật khẩu cũ
+    const isValidOldPassword = await bcrypt.compare(oldPassword, user.hashedPassword);
+    if (!isValidOldPassword) {
+      return res.status(401).json({
+        ec: 1,  // Lỗi mật khẩu cũ không đúng
+        total: 0,
+        data: [],
+        msg: 'Mật khẩu cũ không đúng',
+      });
+    }
+
+    // Hash mật khẩu mới
+    const hashedNewPassword = await bcrypt.hash(newPassword, user.salt);
+
+    // Cập nhật mật khẩu trong CSDL
+    const filter = { _id: new ObjectId(user._id) };
+    const update = { $set: { hashedPassword: hashedNewPassword } };
+    await usersCollection.updateOne(filter, update);
+
+    // Trả về thành công
+    return res.json({
+      ec: 0,  // Thành công
+      total: 1,
+      data: [],
+      msg: 'Đổi mật khẩu thành công',
+    });
+  } catch (err) {
+    console.error('Lỗi khi đổi mật khẩu:', err);
+
+    // Trả về lỗi server
+    return res.status(500).json({
+      ec: 2,  // Lỗi server
+      total: 0,
+      data: [],
+      msg: 'Lỗi server khi đổi mật khẩu',
+    });
   } finally {
     await client.close();
   }
@@ -895,7 +1083,7 @@ async function respondToMatchRequest(req, res) {
 
 
 
-module.exports = { registerUser,loginUser,getUserInfo,addOrUpdateAddress,addOrUpdatePhoneNumber,changePassword,updateUserName,
+module.exports = { registerUser,loginUser,getUserInfo,addOrUpdateAddress,addOrUpdatePhoneNumber,changePass,updateUserName,
   createTeam, addMember,removeMember,getTeamInfo,
   searchField,
   searchEquipment,

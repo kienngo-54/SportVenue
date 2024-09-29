@@ -28,24 +28,51 @@ async function connectToDB() {
 }
 async function createField(req, res) {
   try {
-    const { name, sport,location, capacity, price} = req.body;
+    const { name, sport, location, capacity, price, venueId } = req.body;
 
-    
-    if (!name || !location || !sport || !price||!capacity) {
-      return res.status(400).json({ message: 'Thiếu thông tin cần thiết' });
+    // Kiểm tra nếu các thông tin cần thiết không được cung cấp
+    if (!name || !sport || !location || !capacity || !price || !venueId) {
+      return res.status(400).json({
+        ec: 1, // Lỗi thiếu thông tin
+        msg: 'Thiếu thông tin cần thiết.',
+      });
     }
 
-  
+    // Kết nối tới cơ sở dữ liệu
     await connectToDB();
-    const fieldsCollection =  client.db('managefield').collection('field');
+    const fieldsCollection = client.db('managefield').collection('field');
 
-    
-    const newField = {
+    // Kiểm tra nếu venueId hợp lệ
+    const venueCollection = client.db('managefield').collection('venue');
+    const venue = await venueCollection.findOne({ _id: ObjectId.createFromHexString(venueId) });
+    if (!venue) {
+      return res.status(404).json({
+        ec: 1, // Lỗi không tìm thấy địa điểm
+        msg: 'Không tìm thấy địa điểm với ID đã cung cấp.',
+      });
+    }
+
+    // Kiểm tra xem sân với tên và venueId đã tồn tại chưa
+    const existingField = await fieldsCollection.findOne({
       name: name,
-      sport:sport,
-      location: location,
-      capacity: capacity,
-      price: price,
+      venueId: ObjectId.createFromHexString(venueId),
+    });
+
+    if (existingField) {
+      return res.status(400).json({
+        ec: 1, // Lỗi sân đã tồn tại
+        msg: 'Sân với tên này đã tồn tại tại địa điểm này.',
+      });
+    }
+
+    // Tạo thông tin sân mới
+    const newField = {
+      name,
+      sport,
+      location,
+      capacity,
+      price,
+      venueId: ObjectId.createFromHexString(venueId), // Gắn venueId vào sân
     };
 
     // Thêm sân mới vào cơ sở dữ liệu
@@ -53,24 +80,34 @@ async function createField(req, res) {
 
     console.log(`New field added with ID ${result.insertedId}`);
 
-    res.json({ message: 'Sân mới đã được thêm thành công', fieldId: result.insertedId });
+    res.status(200).json({
+      ec: 0, // Thành công
+      data: { _id: result.insertedId },
+      msg: 'Sân mới đã được thêm thành công.',
+    });
   } catch (err) {
     console.error('Error adding new field:', err);
-    res.status(500).json({ message: 'Lỗi khi thêm sân mới' });
+    res.status(500).json({
+      ec: 2, // Lỗi server
+      msg: 'Lỗi khi thêm sân mới.',
+    });
   } finally {
     await client.close();
   }
-
 }
 async function removeField(req, res) {
   try {
-    const { fieldId } = req.body;
+    const { fieldId } = req.params;
 
     // Kiểm tra nếu fieldId không được cung cấp
     if (!fieldId) {
-      return res.status(400).json({ message: 'Thiếu ID của sân cần xóa' });
+      return res.status(400).json({
+        ec: 1, // Lỗi thiếu thông tin
+        msg: 'Thiếu ID của sân cần xóa.',
+      });
     }
 
+    // Kết nối tới cơ sở dữ liệu
     await connectToDB();
     const fieldsCollection = client.db('managefield').collection('field');
 
@@ -78,69 +115,112 @@ async function removeField(req, res) {
     const result = await fieldsCollection.deleteOne({ _id: ObjectId.createFromHexString(fieldId) });
 
     if (result.deletedCount === 0) {
-      return res.status(404).json({ message: 'Không tìm thấy sân để xóa' });
+      return res.status(404).json({
+        ec: 1, // Lỗi không tìm thấy sân
+        msg: 'Không tìm thấy sân để xóa.',
+      });
     }
 
     console.log(`Field with ID ${fieldId} has been deleted`);
 
-    res.json({ message: 'Sân đã được xóa thành công' });
+    res.status(200).json({
+      ec: 0, // Thành công
+      msg: 'Sân đã được xóa thành công.',
+    });
   } catch (err) {
     console.error('Error deleting field:', err);
-    res.status(500).json({ message: 'Lỗi khi xóa sân' });
+    res.status(500).json({
+      ec: 2, // Lỗi server
+      msg: 'Lỗi khi xóa sân.',
+    });
   } finally {
     await client.close();
   }
 }
+
 async function createVenue(req, res) {
   try {
     const { name, location } = req.body;
 
     // Kiểm tra nếu thông tin cần thiết không được cung cấp
     if (!name || !location) {
-      return res.status(400).json({ message: 'Thiếu thông tin cần thiết' });
+      return res.status(400).json({
+        ec: 1, // Lỗi thiếu thông tin
+        msg: 'Thiếu thông tin cần thiết.',
+      });
     }
 
+    // Kết nối đến cơ sở dữ liệu
     await connectToDB();
     const fieldsCollection = client.db('managefield').collection('venue');
-    const newVenue = new Venue({ name, location });
+
+    // Kiểm tra xem địa điểm đã tồn tại chưa
     const existingVenue = await fieldsCollection.findOne({ location });
     if (existingVenue) {
-      return res.status(400).json({ message: 'Địa điểm đã tồn tại tại vị trí này' });
+      return res.status(400).json({
+        ec: 1, // Lỗi địa điểm đã tồn tại
+        msg: 'Địa điểm đã tồn tại tại vị trí này.',
+      });
     }
-    // Lưu địa điểm vào cơ sở dữ liệu
-    const result = await fieldsCollection.insertOne(newVenue);
-    console.log(`New venue added with ID ${result._id}`);
 
-    res.json({ message: 'Địa điểm mới đã được thêm thành công', venueId: result._id });
+    // Tạo và lưu địa điểm mới
+    const newVenue = new Venue({ name, location });
+    const result = await fieldsCollection.insertOne(newVenue);
+    console.log(`New venue added with ID ${result.insertedId}`);
+
+    res.status(200).json({
+      ec: 0, // Thành công
+      data: { venueId: result.insertedId }, // Trả về ID của địa điểm mới
+      msg: 'Địa điểm mới đã được thêm thành công.',
+    });
   } catch (err) {
     console.error('Error adding new venue:', err);
-    res.status(500).json({ message: 'Lỗi khi thêm địa điểm mới' });
+    res.status(500).json({
+      ec: 2, // Lỗi server
+      msg: 'Lỗi khi thêm địa điểm mới.',
+    });
   }
 }
 async function removeVenue(req, res) {
   try {
-    const { venueId } = req.body;
+    const { venueId } = req.params;
 
     // Kiểm tra nếu venueId không được cung cấp
     if (!venueId) {
-      return res.status(400).json({ message: 'Thiếu ID của địa điểm cần xóa' });
+      return res.status(400).json({
+        ec: 1, // Lỗi thiếu thông tin
+        msg: 'Thiếu ID của địa điểm cần xóa.',
+      });
     }
 
     // Xóa địa điểm dựa trên venueId
-    const result = await Venue.findByIdAndDelete(ObjectId.createFromHexString(venueId));
+    await connectToDB();
+    const venueCollection = client.db('managefield').collection('venue');
+    const result = await venueCollection.deleteOne({ _id: ObjectId.createFromHexString(venueId) });
 
-    if (!result) {
-      return res.status(404).json({ message: 'Không tìm thấy địa điểm để xóa' });
+    if (result.deletedCount === 0) {
+      return res.status(404).json({
+        ec: 1, // Lỗi không tìm thấy địa điểm
+        msg: 'Không tìm thấy địa điểm để xóa.',
+      });
     }
 
     console.log(`Venue with ID ${venueId} has been deleted`);
 
-    res.json({ message: 'Địa điểm đã được xóa thành công' });
+    res.status(200).json({
+      ec: 0, // Thành công
+      msg: 'Địa điểm đã được xóa thành công.',
+    });
   } catch (err) {
     console.error('Error deleting venue:', err);
-    res.status(500).json({ message: 'Lỗi khi xóa địa điểm' });
+    res.status(500).json({
+      ec: 2, // Lỗi server
+      msg: 'Lỗi khi xóa địa điểm.',
+    });
   }
 }
+
+
 // trainers
 async function addTrainer(req, res) {
   try {
@@ -563,6 +643,74 @@ async function getAllBooking(req, res){
       });
   }
 };
+async function getTotalRevenue(req, res){
+  try {
+    // Lấy startDate và endDate từ query params
+    const { startDate, endDate } = req.query;
+
+    // Kiểm tra nếu không có startDate hoặc endDate
+    if (!startDate || !endDate) {
+      return res.status(400).json({
+        message: 'Vui lòng cung cấp cả startDate và endDate',
+      });
+    }
+
+    // Chuyển đổi startDate và endDate sang kiểu Date
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    // Kiểm tra ngày hợp lệ
+    if (isNaN(start) || isNaN(end)) {
+      return res.status(400).json({
+        message: 'Ngày không hợp lệ',
+      });
+    }
+
+    // Truy cập trực tiếp vào collection 'booking'
+    const bookingCollection = mongoose.connection.collection('booking');
+
+    // Truy vấn MongoDB để tính tổng doanh thu trong khoảng thời gian
+    const totalRevenue = await bookingCollection.aggregate([
+      {
+        $match: {
+          createdAt: {
+            $gte: start,  // Lớn hơn hoặc bằng ngày bắt đầu
+            $lte: end,    // Nhỏ hơn hoặc bằng ngày kết thúc
+          },
+          status: 'paid',  // Chỉ tính những booking đã thanh toán
+        },
+      },
+      {
+        $group: {
+          _id: null,  // Không cần group theo field nào
+          totalRevenue: { $sum: '$totalPrice' },  // Tổng doanh thu
+        },
+      },
+    ]).toArray();  // Chuyển kết quả từ cursor về mảng
+
+    // Kiểm tra nếu không có giao dịch trong khoảng thời gian này
+    if (!totalRevenue.length) {
+      return res.json({
+        totalRevenue: 0,
+        currency: 'VND',
+      });
+    }
+
+    // Trả về tổng doanh thu
+    res.json({
+      totalRevenue: totalRevenue[0].totalRevenue,
+      currency: 'VND',
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: 'Lỗi server',
+    });
+  }
+};
+
+
+
 
 
 
@@ -587,5 +735,6 @@ async function getAllBooking(req, res){
 module.exports = {createField,removeField,createVenue,removeVenue,addTrainer,updateTrainer,deleteTrainer
   ,createPromotion,deletePromotion,getPromotionById,updatePromotion,getAllPromotion,
   getAllUsers,getUserById, deleteUser,resetPassword,
-  getAllBooking
+  getAllBooking,
+  getTotalRevenue
 }

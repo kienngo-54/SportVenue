@@ -10,10 +10,10 @@ const verifyToken = require('../utils/vertifyToken');
 const checkAdminRole = require('../utils/checkAdminRole');
 //quan lý sân
 router.post('/field', verifyToken,checkAdminRole,createField);
-router.delete('/field/:id', verifyToken,checkAdminRole,removeField);
+router.delete('/field/:fieldId', verifyToken,checkAdminRole,removeField);
 // địa điểm sân
-router.post('/venue/create', verifyToken,checkAdminRole,createVenue);
-router.delete('/venue/remove', verifyToken,checkAdminRole,removeVenue);
+router.post('/venue', verifyToken,checkAdminRole,createVenue);
+router.delete('/venue/:venueId', verifyToken,checkAdminRole,removeVenue);
 //promotion
 router.post('/promotion', verifyToken,checkAdminRole,createPromotion);
 router.put('/promotion/:id', verifyToken,checkAdminRole,updatePromotion);
@@ -28,4 +28,6 @@ router.patch('/user/:id',verifyToken,checkAdminRole,resetPassword);
 router.delete('/user/:id',verifyToken,checkAdminRole,deleteUser);
 //
 //router.get('/booking',verifyToken,checkAdminRole,getAllBooking)
+//report
+
 module.exports = router;

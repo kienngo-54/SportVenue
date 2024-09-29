@@ -25,7 +25,7 @@ async function verifyToken(req, res, next) {
         msg: 'Invalid token',
       });
     } else if (err.name === 'TokenExpiredError') {
-      return res.status(401).json({
+      return res.status(419).json({
         ec: 1,  // Lỗi: Token đã hết hạn
         data: {},
         msg: 'Token has expired',

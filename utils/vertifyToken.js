@@ -7,7 +7,7 @@ async function verifyToken(req, res, next) {
   if (!token) {
     return res.status(401).json({
       ec: 1,  // Lỗi: Không có token
-      data: {},
+      
       msg: 'No token provided',
     });
   }
@@ -21,20 +21,20 @@ async function verifyToken(req, res, next) {
     if (err.name === 'JsonWebTokenError') {
       return res.status(401).json({
         ec: 1,  // Lỗi: Token không hợp lệ
-        data: {},
+        
         msg: 'Invalid token',
       });
     } else if (err.name === 'TokenExpiredError') {
       return res.status(419).json({
         ec: 1,  // Lỗi: Token đã hết hạn
-        data: {},
+        
         msg: 'Token has expired',
       });
     } else {
       console.error('Error verifying token:', err);
       return res.status(500).json({
         ec: 2,  // Lỗi server
-        data: {},
+        
         msg: 'Internal Server Error',
       });
     }

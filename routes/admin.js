@@ -27,7 +27,7 @@ router.post('/user',verifyToken,checkAdminRole,registerUser);
 router.patch('/user/:id',verifyToken,checkAdminRole,resetPassword);
 router.delete('/user/:id',verifyToken,checkAdminRole,deleteUser);
 //
-//router.get('/booking',verifyToken,checkAdminRole,getAllBooking)
+router.get('/booking',verifyToken,checkAdminRole,getAllBooking)
 //report
 
 module.exports = router;

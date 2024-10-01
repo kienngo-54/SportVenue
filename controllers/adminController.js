@@ -489,17 +489,26 @@ async function deletePromotion(req, res) {
 }
 async function getAllUsers(req, res) {
   try {
+    const { page = 1, record = 10 } = req.query;  // Nhận thông tin phân trang từ query parameters và đổi limit thành record
     const db = await connectToDB();
     const usersCollection = db.collection('users');
 
-    // Lấy danh sách người dùng chỉ với _id và username
-    const users = await usersCollection.find({}, { projection: { _id: 1, username: 1 } }).toArray();
+    // Tính toán để phân trang
+    const skip = (parseInt(page) - 1) * parseInt(record);
+    const totalUsers = await usersCollection.countDocuments({ role: { $ne: 'admin' } });  // Đếm số người dùng không phải admin
+    const users = await usersCollection
+      .find({ role: { $ne: 'admin' } }, { projection: {hashedPassword: 0,salt: 0, role: 0 } })  // Loại bỏ người dùng có role là admin và ẩn trường password
+      .skip(skip)
+      .limit(parseInt(record))
+      .toArray();
 
-    // Trả về danh sách người dùng
+    // Trả về danh sách người dùng theo format yêu cầu
     res.status(200).json({
       ec: 0,  // Thành công
-      total: users.length,  // Tổng số người dùng
-      data: [users],  // Dữ liệu trả về
+      total: totalUsers,  // Tổng số người dùng
+      page: parseInt(page),  // Trang hiện tại
+      record: users.length,  // Số người dùng trả về
+      data: users,  // Dữ liệu trả về (danh sách người dùng)
       msg: 'Lấy danh sách người dùng thành công',
     });
   } catch (error) {
@@ -510,6 +519,8 @@ async function getAllUsers(req, res) {
     });
   }
 }
+
+
 async function getUserById(req, res) {
   try {
     const { id } = req.params;
@@ -526,8 +537,6 @@ async function getUserById(req, res) {
     if (!user) {
       return res.status(404).json({
         ec: 1,  // Lỗi không tìm thấy
-        total: 0,  // Không có người dùng
-        data: {},  // Dữ liệu trống
         msg: 'Không tìm thấy người dùng với ID này.',
       });
     }
@@ -639,21 +648,56 @@ async function getAllBooking(req, res) {
   try {
     const db = await connectToDB();
     const bookingsCollection = db.collection('booking');
-    const bookings = await bookingsCollection.find().toArray();
 
-    // Tạo một mảng các ID để tìm thông tin liên quan
-    
+    // Sử dụng Mongoose để populate dữ liệu từ các ID tham chiếu
+    const bookings = await bookingsCollection.aggregate([
+      {
+        $lookup: {
+          from: 'users',  // Tên collection 'users' trong database
+          localField: 'user',  // Field chứa ObjectId của người dùng trong 'booking'
+          foreignField: '_id',  // Field _id trong collection 'users'
+          as: 'userDetails'  // Tạo mảng chứa thông tin chi tiết của user
+        }
+      },
+      {
+        $lookup: {
+          from: 'fields',  // Tên collection 'fields'
+          localField: 'field',
+          foreignField: '_id',
+          as: 'fieldDetails'
+        }
+      },
+      {
+        $lookup: {
+          from: 'referees',  // Tên collection 'referees'
+          localField: 'referee',
+          foreignField: '_id',
+          as: 'refereeDetails'
+        }
+      },
+      {
+        $lookup: {
+          from: 'trainers',  // Tên collection 'trainers'
+          localField: 'trainer',
+          foreignField: '_id',
+          as: 'trainerDetails'
+        }
+      }
+    ]).toArray();
 
-    // Thực hiện các truy vấn để lấy thông tin từ các collection khác
-    
-
-    // Ghép thông tin vào các booking
-    
+    // Format lại dữ liệu nếu cần (ví dụ chỉ lấy phần tử đầu tiên trong mảng)
+    const formattedBookings = bookings.map(booking => ({
+      ...booking,
+      user: booking.userDetails[0]?.name || 'Unknown User',  // Lấy tên người dùng
+      field: booking.fieldDetails[0]?.name || 'Unknown Field',  // Lấy tên sân
+      referee: booking.refereeDetails[0]?.name || 'No Referee',  // Lấy tên trọng tài
+      trainer: booking.trainerDetails[0]?.name || 'No Trainer'  // Lấy tên huấn luyện viên
+    }));
 
     return res.status(200).json({
       ec: 0, // Thành công
-      total: bookings.length,
-      data: bookings,
+      total: formattedBookings.length,
+      data: formattedBookings,
       msg: 'Lấy tất cả thông tin đặt sân thành công.'
     });
   } catch (error) {
@@ -664,6 +708,7 @@ async function getAllBooking(req, res) {
     });
   }
 }
+
 
 
 async function getTotalRevenue(req, res){

@@ -371,8 +371,8 @@ async function changePass(req, res) {
 ////////team
 async function createTeam(req, res) {
   try {
-    const db= await connectToDB();
-    const { name, description, sport } = req.body;
+    const db = await connectToDB();
+    const { name, description, sport, emails } = req.body; // Lấy email từ yêu cầu
 
     if (!name || !description || !sport) {
       return res.status(400).json({
@@ -382,6 +382,7 @@ async function createTeam(req, res) {
     }
 
     const teamCollection = db.collection('team');
+    const userCollection = db.collection('users'); // Collection chứa thông tin người dùng
     const captainId = req.user.userId;
     const objectId = ObjectId.createFromHexString(captainId);
 
@@ -394,19 +395,32 @@ async function createTeam(req, res) {
       });
     }
 
-    // Tạo thông tin đội mới, thêm đội trưởng vào mảng members
+    // Tạo thông tin đội mới
+    const membersIds = [objectId]; // Bắt đầu với ID của đội trưởng
+
+    // Kiểm tra danh sách email và tìm kiếm người dùng
+    if (Array.isArray(emails)) {
+      for (const email of emails) {
+        const user = await userCollection.findOne({ email });
+        if (user) {
+          membersIds.push(user._id); // Thêm ID của người dùng vào mảng members nếu tìm thấy
+        }
+      }
+    }
+
+    // Tạo đội mới với mảng members đã cập nhật
     const team = {
       name: name,
       description: description,
       sport: sport,
       captain: objectId,
-      members: [objectId],  // Thêm ID của đội trưởng vào mảng thành viên
+      members: membersIds, // Thêm các ID vào mảng thành viên
     };
 
     const result = await teamCollection.insertOne(team);
     console.log(`New team added with ID ${result.insertedId}`);
 
-    // Trả về phản hồi thành công dưới dạng RRCommonObject nếu chỉ có 1 dữ liệu trả về
+    // Trả về phản hồi thành công
     res.json({
       ec: 0,  // Thành công
       data: { teamId: result.insertedId },  // Trả về một object
@@ -420,6 +434,7 @@ async function createTeam(req, res) {
     });
   } 
 }
+
 async function addMember(req, res) {
   try {
     const db = await connectToDB();
@@ -582,10 +597,12 @@ async function getTeamInfo(req, res) {
       $or: [{ captain: objectId }, { members: objectId }]
     }).toArray();
 
+    // Nếu không tìm thấy đội nào, trả về mảng rỗng
     if (teams.length === 0) {
-      return res.status(404).json({
-        ec: 1,  // Lỗi: Không tìm thấy đội
-        msg: 'Người dùng không thuộc bất kỳ đội nào',
+      return res.json({
+        ec: 0,  // Thành công
+        data: [],
+        msg: 'Người dùng không thuộc đội nào',
       });
     }
 
@@ -632,6 +649,7 @@ async function getTeamInfo(req, res) {
     });
   }
 }
+
 
 
 

@@ -422,20 +422,20 @@ async function createTeam(req, res) {
 }
 async function addMember(req, res) {
   try {
-    const db= await connectToDB();
-    const { memberId } = req.body; // Truy cập memberId từ body
+    const db = await connectToDB();
+    const { memberEmail } = req.body; // Truy cập email từ body
     const captainId = req.user.userId;
 
-    // Kiểm tra xem memberId có tồn tại không
-    if (!memberId) {
+    // Kiểm tra xem memberEmail có tồn tại không
+    if (!memberEmail) {
       return res.status(400).json({
-        ec: 1,  // Lỗi thiếu thông tin hoặc memberId không hợp lệ
-        
-        msg: 'Thiếu thông tin cần thiết hoặc memberId không hợp lệ',
+        ec: 1,  // Lỗi thiếu thông tin hoặc email không hợp lệ
+        msg: 'Thiếu thông tin cần thiết hoặc email không hợp lệ',
       });
     }
 
     const teamCollection = db.collection('team');
+    const userCollection = db.collection('users'); // Giả sử bạn có collection tên là 'users'
     const captainObjectId = ObjectId.createFromHexString(captainId);
 
     // Tìm đội mà người dùng là đội trưởng
@@ -444,19 +444,26 @@ async function addMember(req, res) {
     if (!team) {
       return res.status(404).json({
         ec: 1,  // Lỗi: Đội không tồn tại hoặc người dùng không phải đội trưởng
-        
         msg: 'Đội không tồn tại hoặc người dùng không phải đội trưởng',
       });
     }
 
-    const memberObjectId = ObjectId.createFromHexString(memberId);
+    // Tìm thành viên dựa trên email
+    const member = await userCollection.findOne({ email: memberEmail });
+
+    if (!member) {
+      return res.status(404).json({
+        ec: 1,  // Lỗi: Không tìm thấy người dùng với email đã cung cấp
+        msg: 'Không tìm thấy người dùng với email đã cung cấp',
+      });
+    }
+
+    const memberObjectId = member._id;
 
     // Kiểm tra xem thành viên đã có trong đội chưa
-    // Sử dụng phương thức `some` để kiểm tra sự tồn tại
     if (team.members.some(member => member.equals(memberObjectId))) {
       return res.status(400).json({
         ec: 1,  // Lỗi: Thành viên đã có trong đội
-        
         msg: 'Thành viên đã có trong đội',
       });
     }
@@ -470,7 +477,6 @@ async function addMember(req, res) {
     if (result.modifiedCount === 0) {
       return res.status(400).json({
         ec: 1,  // Lỗi: Không thêm được thành viên
-        
         msg: 'Lỗi khi thêm thành viên',
       });
     }
@@ -486,11 +492,11 @@ async function addMember(req, res) {
     console.error('Lỗi khi thêm thành viên:', err);
     res.status(500).json({
       ec: 2,  // Lỗi server
-      
       msg: 'Lỗi server khi thêm thành viên',
     });
-  } 
+  }
 }
+
 
 
 async function removeMember(req, res) {
@@ -1099,10 +1105,6 @@ async function getMatchRequests(req, res) {
     });
   }
 }
-
-
-
-
 async function respondToMatchRequest(req, res) {
   try {
     const { matchingId, quantity } = req.body;

@@ -1,0 +1,32 @@
+{"_id":{"$oid":"66e2bb4f7596e281ec9f0ed0"},"name":"Bóng đá","sport":"Bóng đá","quantity":100,"price":30000}
+{"_id":{"$oid":"66e2bbc8e6bf56a760c1c474"},"name":"Vợt cầu lông","sport":"Cầu lông","quantity":40,"price":10000}
+{"_id":{"$oid":"66e2bbc8e6bf56a760c1c475"},"name":"Gậy bóng chày","sport":"Bóng chày","quantity":25,"price":500000}
+{"_id":{"$oid":"66e2bbc8e6bf56a760c1c476"},"name":"Kính bơi","sport":"Bơi lội","quantity":80,"price":100000}
+{"_id":{"$oid":"66e2bbc8e6bf56a760c1c477"},"name":"Thảm yoga","sport":"Yoga","quantity":45,"price":400000}
+{"_id":{"$oid":"66e2bbc8e6bf56a760c1c478"},"name":"Găng tay thủ môn","sport":"Bóng đá","quantity":35,"price":150000}
+{"_id":{"$oid":"66e2bbc8e6bf56a760c1c479"},"name":"Quả bóng chuyền","sport":"Bóng chuyền","quantity":50,"price":220000}
+{"_id":{"$oid":"66e2bbc8e6bf56a760c1c47a"},"name":"Giày bóng rổ","sport":"Bóng rổ","quantity":60,"price":50000}
+{"_id":{"$oid":"66e2bbc8e6bf56a760c1c47b"},"name":"Áo đấu bóng đá","sport":"Bóng đá","quantity":100,"price":250000}
+{"_id":{"$oid":"66e2bbc8e6bf56a760c1c47c"},"name":"Bàn bóng bàn","sport":"Bóng bàn","quantity":10,"price":5000000}
+{"_id":{"$oid":"66e2bbc8e6bf56a760c1c47d"},"name":"Quả bóng golf","sport":"Golf","quantity":200,"price":50000}
+{"_id":{"$oid":"66e2bbc8e6bf56a760c1c47e"},"name":"Bóng rổ","sport":"Bóng rổ","quantity":70,"price":350000}
+{"_id":{"$oid":"66e2bbc8e6bf56a760c1c47f"},"name":"Bóng chuyền","sport":"Bóng chuyền","quantity":50,"price":250000}
+{"_id":{"$oid":"66e2bbc8e6bf56a760c1c480"},"name":"Vợt bóng bàn","sport":"Bóng bàn","quantity":60,"price":200000}
+{"_id":{"$oid":"66e2bbc8e6bf56a760c1c481"},"name":"Bóng đá","sport":"Bóng đá","quantity":100,"price":300000}
+{"_id":{"$oid":"66e2bbc8e6bf56a760c1c482"},"name":"Gậy golf","sport":"Golf","quantity":20,"price":3000000}
+{"_id":{"$oid":"66e2bbc8e6bf56a760c1c483"},"name":"Vợt tennis","sport":"Quần vợt","quantity":30,"price":2000000}
+{"_id":{"$oid":"66e2bbc8e6bf56a760c1c484"},"name":"Vợt cầu lông cao cấp","sport":"Cầu lông","quantity":20,"price":2500000}
+{"_id":{"$oid":"66e2bbc8e6bf56a760c1c485"},"name":"Gậy leo núi","sport":"Leo núi","quantity":15,"price":600000}
+{"_id":{"$oid":"66e2bbc8e6bf56a760c1c486"},"name":"Mũ bảo hiểm xe đạp","sport":"Xe đạp","quantity":50,"price":300000}
+{"_id":{"$oid":"66e2bbc8e6bf56a760c1c487"},"name":"Quả bóng đá","sport":"Bóng đá","quantity":150,"price":350000}
+{"_id":{"$oid":"66e2bbc8e6bf56a760c1c488"},"name":"Dây nhảy thể dục","sport":"Thể dục dụng cụ","quantity":100,"price":150000}
+{"_id":{"$oid":"66e2bbc8e6bf56a760c1c489"},"name":"Bóng bowling","sport":"Bowling","quantity":50,"price":1200000}
+{"_id":{"$oid":"66e2bbc8e6bf56a760c1c48a"},"name":"Ván trượt","sport":"Trượt ván","quantity":20,"price":800000}
+{"_id":{"$oid":"66e2bbc8e6bf56a760c1c48b"},"name":"Kính bảo hộ xe đạp","sport":"Xe đạp","quantity":60,"price":250000}
+{"_id":{"$oid":"66e2bbc8e6bf56a760c1c48c"},"name":"Quả bóng rổ cao cấp","sport":"Bóng rổ","quantity":25,"price":700000}
+{"_id":{"$oid":"66e2bbc8e6bf56a760c1c48d"},"name":"Giày tennis","sport":"Quần vợt","quantity":35,"price":1800000}
+{"_id":{"$oid":"66e2bbc8e6bf56a760c1c48e"},"name":"Vợt squash","sport":"Squash","quantity":30,"price":1500000}
+{"_id":{"$oid":"66e2bbc8e6bf56a760c1c48f"},"name":"Áo phao bơi","sport":"Bơi lội","quantity":30,"price":400000}
+{"_id":{"$oid":"66e2bbc8e6bf56a760c1c490"},"name":"Quả cầu cầu lông","sport":"Cầu lông","quantity":500,"price":50000}
+{"_id":{"$oid":"66e2bbc8e6bf56a760c1c491"},"name":"Giày đi bộ","sport":"Đi bộ đường dài","quantity":40,"price":900000}
+{"_id":{"$oid":"66e2bbc8e6bf56a760c1c492"},"name":"Găng tay boxing","sport":"Boxing","quantity":40,"price":500000}

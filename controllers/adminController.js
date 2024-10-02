@@ -505,8 +505,6 @@ async function getAllUsers(req, res) {
     // Trả về danh sách người dùng theo format yêu cầu
     res.status(200).json({
       ec: 0,  // Thành công
-      total: totalUsers,  // Tổng số người dùng
-      page: parseInt(page),  // Trang hiện tại
       record: users.length,  // Số người dùng trả về
       data: users,  // Dữ liệu trả về (danh sách người dùng)
       msg: 'Lấy danh sách người dùng thành công',
@@ -649,7 +647,17 @@ async function getAllBooking(req, res) {
     const db = await connectToDB();
     const bookingsCollection = db.collection('booking');
 
-    // Sử dụng Mongoose để populate dữ liệu từ các ID tham chiếu
+    // Lấy page và limit từ query string, gán giá trị mặc định nếu không có
+    const page = parseInt(req.query.page) || 1;  // Trang hiện tại
+    const limit = parseInt(req.query.record) || 10;  // Số bản ghi trên mỗi trang
+
+    // Tính toán số bản ghi cần bỏ qua (skip)
+    const skip = (page - 1) * limit;
+
+    // Đếm tổng số bản ghi
+    const totalBookings = await bookingsCollection.countDocuments();
+
+    // Sử dụng MongoDB để populate dữ liệu từ các ID tham chiếu và phân trang
     const bookings = await bookingsCollection.aggregate([
       {
         $lookup: {
@@ -661,7 +669,7 @@ async function getAllBooking(req, res) {
       },
       {
         $lookup: {
-          from: 'fields',  // Tên collection 'fields'
+          from: 'field',  // Tên collection 'fields'
           localField: 'field',
           foreignField: '_id',
           as: 'fieldDetails'
@@ -669,7 +677,7 @@ async function getAllBooking(req, res) {
       },
       {
         $lookup: {
-          from: 'referees',  // Tên collection 'referees'
+          from: 'referee',  // Tên collection 'referees'
           localField: 'referee',
           foreignField: '_id',
           as: 'refereeDetails'
@@ -677,27 +685,38 @@ async function getAllBooking(req, res) {
       },
       {
         $lookup: {
-          from: 'trainers',  // Tên collection 'trainers'
+          from: 'trainer',  // Tên collection 'trainers'
           localField: 'trainer',
           foreignField: '_id',
           as: 'trainerDetails'
         }
-      }
+      },
+      {
+        $lookup: {
+          from: 'equipment',  // Tên collection 'equipment'
+          localField: 'equipment',
+          foreignField: '_id',
+          as: 'equipmentDetails'  // Lấy thông tin chi tiết thiết bị
+        }
+      },
+      { $skip: skip },  // Bỏ qua số bản ghi cần bỏ qua
+      { $limit: limit },  // Giới hạn số bản ghi trả về
     ]).toArray();
 
     // Format lại dữ liệu nếu cần (ví dụ chỉ lấy phần tử đầu tiên trong mảng)
     const formattedBookings = bookings.map(booking => ({
       ...booking,
-      user: booking.userDetails[0]?.name || 'Unknown User',  // Lấy tên người dùng
+      user: booking.userDetails[0]?.username || 'Unknown User',  // Lấy tên người dùng
       field: booking.fieldDetails[0]?.name || 'Unknown Field',  // Lấy tên sân
       referee: booking.refereeDetails[0]?.name || 'No Referee',  // Lấy tên trọng tài
-      trainer: booking.trainerDetails[0]?.name || 'No Trainer'  // Lấy tên huấn luyện viên
+      trainer: booking.trainerDetails[0]?.name || 'No Trainer',  // Lấy tên huấn luyện viên
+      equipment: booking.equipmentDetails[0]?.name || 'Unknown Equipment'  // Lấy tên thiết bị
     }));
 
     return res.status(200).json({
       ec: 0, // Thành công
-      total: formattedBookings.length,
-      data: formattedBookings,
+      total: totalBookings,  // Tổng số bản ghi
+      data: formattedBookings,  // Dữ liệu trả về
       msg: 'Lấy tất cả thông tin đặt sân thành công.'
     });
   } catch (error) {
@@ -708,6 +727,8 @@ async function getAllBooking(req, res) {
     });
   }
 }
+
+
 
 
 

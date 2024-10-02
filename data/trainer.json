@@ -1,0 +1,28 @@
+{"_id":{"$oid":"66e2c5d6137786db8b6c8f39"},"name":"Ngô Văn Hùng","phoneNumber":"0912345677","email":"ngovanhung@gmail.com","sport":"Bóng chuyền","area":["Quận 12","Tân Phú"],"score":3,"price":250000}
+{"_id":{"$oid":"66e2c5d6137786db8b6c8f3a"},"name":"Trần Thị Nga","phoneNumber":"0912345680","email":"tranthinga@gmail.com","sport":"Quần vợt","area":["Quận 3","Quận 4"],"score":4,"price":250000}
+{"_id":{"$oid":"66e2c5d6137786db8b6c8f37"},"name":"Nguyễn Văn Minh","phoneNumber":"0912345679","email":"nguyenvanminh@gmail.com","sport":"Cầu lông","area":["Quận 6","Bình Thạnh"],"score":5,"price":250000}
+{"_id":{"$oid":"66e2c5d6137786db8b6c8f35"},"name":"Phạm Thị Dung","phoneNumber":"0912345674","email":"phamthidung@gmail.com","sport":"Cầu lông","area":["Tân Bình","Bình Thạnh"],"score":4,"price":250000}
+{"_id":{"$oid":"66e2c5d6137786db8b6c8f3c"},"name":"Ngô Văn Sơn","phoneNumber":"0912345685","email":"ngovanson@gmail.com","sport":"Quần vợt","area":["Quận 7","Quận 12"],"score":4,"price":250000}
+{"_id":{"$oid":"66e2c5d6137786db8b6c8f3b"},"name":"Hoàng Văn Phúc","phoneNumber":"0912345683","email":"hoangvanphuc@gmail.com","sport":"Bóng bàn","area":["Bình Tân","Tân Bình"],"score":5,"price":250000}
+{"_id":{"$oid":"66e2c5d6137786db8b6c8f3e"},"name":"Đỗ Thị Thảo","phoneNumber":"0912345686","email":"dothithao@gmail.com","sport":"Bóng đá","area":["Quận 4","Gò Vấp"],"score":5,"price":250000}
+{"_id":{"$oid":"66e2c5d6137786db8b6c8f3f"},"name":"Lê Văn Cường","phoneNumber":"0912345673","email":"levancuong@gmail.com","sport":"Bóng bàn","area":["Quận 5","Quận 6"],"score":3,"price":250000}
+{"_id":{"$oid":"66e2c5d6137786db8b6c8f41"},"name":"Trần Thị Trang","phoneNumber":"0912345688","email":"tranthitrang@gmail.com","sport":"Bóng bàn","area":["Quận 8","Bình Thạnh"],"score":4,"price":250000}
+{"_id":{"$oid":"66e2c5d6137786db8b6c8f3d"},"name":"Vũ Thị Quỳnh","phoneNumber":"0912345684","email":"vuthiquynh@gmail.com","sport":"Cầu lông","area":["Quận 10","Quận 11","Tân Phú"],"score":3,"price":250000}
+{"_id":{"$oid":"66e2c5d6137786db8b6c8f40"},"name":"Nguyễn Văn Tiến","phoneNumber":"0912345687","email":"nguyenvantien@gmail.com","sport":"Bóng chuyền","area":["Quận 5","Phú Nhuận"],"score":3,"price":250000}
+{"_id":{"$oid":"66e2c5d6137786db8b6c8f42"},"name":"Nguyễn Văn An","phoneNumber":"0912345671","email":"nguyenvanan@gmail.com","sport":"Bóng đá","area":["Quận 1","Quận 3"],"score":4,"price":250000}
+{"_id":{"$oid":"66e2c5d6137786db8b6c8f38"},"name":"Lê Văn Nhân","phoneNumber":"0912345681","email":"levannhan@gmail.com","sport":"Bóng đá","area":["Quận 8","Gò Vấp"],"score":3,"price":250000}
+{"_id":{"$oid":"66e2c5d6137786db8b6c8f34"},"name":"Vũ Thị Hiền","phoneNumber":"0912345676","email":"vuthihien@gmail.com","sport":"Bóng đá","area":["Quận 7","Phú Nhuận"],"score":2,"price":250000}
+{"_id":{"$oid":"66e2c5d6137786db8b6c8f36"},"name":"Phạm Thị Phương","phoneNumber":"0912345682","email":"phamthiphuong@gmail.com","sport":"Bóng chuyền","area":["Quận 5","Quận 12","Phú Nhuận"],"score":4,"price":250000}
+{"_id":{"$oid":"66e2c5d6137786db8b6c8f32"},"name":"Đỗ Thị Lan","phoneNumber":"0912345678","email":"dothilan@gmail.com","sport":"Bóng bàn","area":["Quận 10","Bình Tân","Tân Bình"],"score":4,"price":200000}
+{"_id":{"$oid":"66e2c5d6137786db8b6c8f43"},"name":"Lê Văn Trung","phoneNumber":"0912345689","email":"levantrung@gmail.com","sport":"Cầu lông","area":["Quận 11","Tân Bình","Tân Phú"],"score":5,"price":250000}
+{"_id":{"$oid":"66e2c5d6137786db8b6c8f44"},"name":"Phạm Thị Tâm","phoneNumber":"0912345690","email":"phamthitam@gmail.com","sport":"Quần vợt","area":["Quận 6","Bình Tân"],"score":3,"price":250000}
+{"_id":{"$oid":"66e2c5d6137786db8b6c8f49"},"name":"Ngô Văn Yên","phoneNumber":"0912345693","email":"ngovanyen@gmail.com","sport":"Bóng bàn","area":["Quận 4","Quận 8","Bình Tân"],"score":4,"price":250000}
+{"_id":{"$oid":"66e2c5d6137786db8b6c8f45"},"name":"Trần Thị Vân","phoneNumber":"0912345696","email":"tranthivan@gmail.com","sport":"Bóng đá","area":["Quận 2","Quận 11"],"score":4,"price":250000}
+{"_id":{"$oid":"66e2c5d6137786db8b6c8f4a"},"name":"Phạm Thị Hà","phoneNumber":"0912345698","email":"phamthiha@gmail.com","sport":"Bóng bàn","area":["Quận 3","Quận 7"],"score":3,"price":250000}
+{"_id":{"$oid":"66e2c5d6137786db8b6c8f48"},"name":"Lê Văn Hải","phoneNumber":"0912345697","email":"levanhai@gmail.com","sport":"Bóng chuyền","area":["Tân Phú","Quận 4"],"score":3,"price":250000}
+{"_id":{"$oid":"66e2c5d6137786db8b6c8f46"},"name":"Hoàng Văn Vinh","phoneNumber":"0912345691","email":"hoangvanvinh@gmail.com","sport":"Bóng đá","area":["Quận 3","Quận 10"],"score":4,"price":250000}
+{"_id":{"$oid":"66e2c5d6137786db8b6c8f4b"},"name":"Đỗ Thị Yến","phoneNumber":"0912345694","email":"dothiyen@gmail.com","sport":"Cầu lông","area":["Quận 12","Tân Bình"],"score":3,"price":250000}
+{"_id":{"$oid":"66e2c5d6137786db8b6c8f47"},"name":"Hoàng Văn Đông","phoneNumber":"0912345675","email":"hoangvandong@gmail.com","sport":"Quần vợt","area":["Quận 1","Quận 3","Gò Vấp"],"score":5,"price":250000}
+{"_id":{"$oid":"66e2c5d6137786db8b6c8f4d"},"name":"Nguyễn Văn Cường","phoneNumber":"0912345695","email":"nguyenvancuong@gmail.com","sport":"Quần vợt","area":["Quận 1","Quận 5","Quận 6"],"score":5,"price":250000}
+{"_id":{"$oid":"66e2c5d6137786db8b6c8f4c"},"name":"Vũ Thị Xuân","phoneNumber":"0912345692","email":"vuthixuan@gmail.com","sport":"Bóng chuyền","area":["Gò Vấp","Phú Nhuận"],"score":5,"price":250000}
+{"_id":{"$oid":"66e2c5d6137786db8b6c8f33"},"name":"Trần Thị Bích","phoneNumber":"0912345672","email":"tranthibich@gmail.com","sport":"Bóng chuyền","area":["Quận 4","Quận 7","Quận 10"],"score":5,"price":250000}

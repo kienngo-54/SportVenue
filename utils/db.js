@@ -2,7 +2,7 @@
 require('dotenv').config();
 const { MongoClient, ServerApiVersion } = require('mongodb');
 
-const client = new MongoClient("mongodb+srv://duckien44:kien4420@cluster0.sldzf2a.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0", {
+const client = new MongoClient(process.env.MONGODB_URI, {
   serverApi: {
     version: ServerApiVersion.v1,
     strict: true,
@@ -22,7 +22,6 @@ async function connectToDB() {
     throw err;
   }
 }
-
 async function closeDBConnection() {
   await client.close();
   console.log('MongoDB connection closed');

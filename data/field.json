@@ -1,0 +1,84 @@
+{"_id":{"$oid":"66aa1544f2983e0241903e43"},"name":"DDA2","sport":"Bóng đá","location":"Phú Nhuận","capacity":7,"price":300000,"venueID":"66aa147ef2983e0241903e41"}
+{"_id":{"$oid":"66aa15e3f2983e0241903e45"},"name":"Tý Đô1","sport":"Bóng đá","location":"Gò Vấp","capacity":7,"price":300000,"venueID":"66aa15a6f2983e0241903e44"}
+{"_id":{"$oid":"66aa11caf2983e0241903e3e"},"name":"K341","sport":"Bóng đá","location":"Tân Bình","capacity":5,"price":250000,"venueID":"66aa1173f2983e0241903e3d"}
+{"_id":{"$oid":"66aa108af2983e0241903e3b"},"name":"Khang An2","location":"Gò Vấp","capacity":10,"price":350000,"sport":"Bóng đá","venueID":"66aa1013f2983e0241903e3a"}
+{"_id":{"$oid":"66aa162ef2983e0241903e46"},"name":"Tý ĐÔ2","sport":"Bóng đá","location":"Gò Vấp","capacity":7,"price":350000,"venueID":"66aa15a6f2983e0241903e44"}
+{"_id":{"$oid":"66aa17b2f2983e0241903e47"},"name":"Tý Đô 3","sport":"Bóng đá","location":"Gò Vấp","capacity":5,"price":250000,"venueID":"66aa15a6f2983e0241903e44"}
+{"_id":{"$oid":"66aa1855f2983e0241903e49"},"name":"Thanh niên1","sport":"Bóng đá","location":"Gò Vấp","capacity":5,"price":250000,"venueID":"66aa1814f2983e0241903e48"}
+{"_id":{"$oid":"66f630e62c8a6e257c123a81"},"name":"Sân K34 1","sport":"Bóng đá","location":"Tân Bình","capacity":22,"price":500000,"venueId":"66aa1173f2983e0241903e3d"}
+{"_id":{"$oid":"66f630e62c8a6e257c123a82"},"name":"Sân Khang An 2","sport":"Bóng chuyền","location":"Gò Vấp","capacity":12,"price":300000,"venueId":"66aa1013f2983e0241903e3a"}
+{"_id":{"$oid":"66f630e62c8a6e257c123a84"},"name":"Sân Đào Duy Anh 2","sport":"Bóng chuyền","location":"Phú Nhuận","capacity":12,"price":300000,"venueId":"66aa147ef2983e0241903e41"}
+{"_id":{"$oid":"66f630e62c8a6e257c123a83"},"name":"Sân Đào Duy Anh 3","sport":"Bóng đá","location":"Phú Nhuận","capacity":22,"price":500000,"venueId":"66aa147ef2983e0241903e41"}
+{"_id":{"$oid":"66f630e62c8a6e257c123a85"},"name":"Sân Tý Đô 3","sport":"Cầu lông","location":"Gò Vấp","capacity":6,"price":250000,"venueId":"66aa15a6f2983e0241903e44"}
+{"_id":{"$oid":"66f630e62c8a6e257c123a87"},"name":"Sân K34 3","sport":"Cầu lông","location":"Tân Bình","capacity":6,"price":250000,"venueId":"66aa1173f2983e0241903e3d"}
+{"_id":{"$oid":"66f630e62c8a6e257c123a88"},"name":"Sân Khang An 1","sport":"Bóng đá","location":"Gò Vấp","capacity":22,"price":500000,"venueId":"66aa1013f2983e0241903e3a"}
+{"_id":{"$oid":"66f630e62c8a6e257c123a8a"},"name":"Sân Hùng Vương 1","sport":"Bóng đá","location":"Quận 5","capacity":22,"price":600000,"venueId":"66f628627694e4670873453c"}
+{"_id":{"$oid":"66f630e62c8a6e257c123a89"},"name":"Sân Thanh Niên 2","sport":"Bóng chuyền","location":"Gò Vấp","capacity":12,"price":300000,"venueId":"66aa1814f2983e0241903e48"}
+{"_id":{"$oid":"66f630e62c8a6e257c123a86"},"name":"Sân Thanh Niên 1","sport":"Bóng đá","location":"Gò Vấp","capacity":22,"price":500000,"venueId":"66aa1814f2983e0241903e48"}
+{"_id":{"$oid":"66f630e62c8a6e257c123a8c"},"name":"Sân Hùng Vương 3","sport":"Bóng chuyền","location":"Quận 5","capacity":12,"price":350000,"venueId":"66f628627694e4670873453c"}
+{"_id":{"$oid":"66f630e62c8a6e257c123a8b"},"name":"Sân Hùng Vương 2","sport":"Cầu lông","location":"Quận 5","capacity":6,"price":250000,"venueId":"66f628627694e4670873453c"}
+{"_id":{"$oid":"66f630e62c8a6e257c123a8d"},"name":"Sân Tý Đô 2","sport":"Bóng chuyền","location":"Gò Vấp","capacity":12,"price":300000,"venueId":"66aa15a6f2983e0241903e44"}
+{"_id":{"$oid":"66aa14def2983e0241903e42"},"name":"DDA1","sport":"Bóng đá","location":"Phú Nhuận","capacity":5,"price":200000,"venueID":"66aa147ef2983e0241903e41"}
+{"_id":{"$oid":"66aa1224f2983e0241903e3f"},"name":"K342","sport":"Bóng đá","location":"Tân Bình","capacity":7,"price":350000,"venueID":"66aa1173f2983e0241903e3d"}
+{"_id":{"$oid":"66aa1104f2983e0241903e3c"},"name":"Khang An3","sport":"Bóng đá","location":"Gò vấp","capacity":7,"price":300000,"venueID":"66aa1013f2983e0241903e3a"}
+{"_id":{"$oid":"66aa1280f2983e0241903e40"},"name":"K343","sport":"Bóng đá","location":"Tân Bình","capacity":7,"price":400000,"venueID":"66aa1173f2983e0241903e3d"}
+{"_id":{"$oid":"66aa0bbff2983e0241903e39"},"name":"Khang An1","sport":"Bóng đá","location":"Gò vấp","capacity":5,"price":200000,"venueID":"66aa1013f2983e0241903e3a"}
+{"_id":{"$oid":"66f630e62c8a6e257c123a8e"},"name":"Sân Lý Thường Kiệt 3","sport":"Bóng bàn","location":"Quận 10","capacity":4,"price":200000,"venueId":"66f628627694e4670873453d"}
+{"_id":{"$oid":"66f630e62c8a6e257c123a8f"},"name":"Sân Lý Thường Kiệt 1","sport":"Bóng đá","location":"Quận 10","capacity":22,"price":600000,"venueId":"66f628627694e4670873453d"}
+{"_id":{"$oid":"66f630e62c8a6e257c123a90"},"name":"Sân Ba Tháng Hai 2","sport":"Bóng chuyền","location":"Quận 11","capacity":12,"price":350000,"venueId":"66f628627694e4670873453e"}
+{"_id":{"$oid":"66f630e62c8a6e257c123a92"},"name":"Sân Nguyễn Ảnh Thủ 1","sport":"Quần vợt","location":"Quận 12","capacity":4,"price":450000,"venueId":"66f628627694e4670873453f"}
+{"_id":{"$oid":"66f630e62c8a6e257c123a93"},"name":"Sân Nguyễn Ảnh Thủ 2","sport":"Bóng đá","location":"Quận 12","capacity":22,"price":550000,"venueId":"66f628627694e4670873453f"}
+{"_id":{"$oid":"66f630e62c8a6e257c123a94"},"name":"Sân Nguyễn Ảnh Thủ 3","sport":"Cầu lông","location":"Quận 12","capacity":6,"price":250000,"venueId":"66f628627694e4670873453f"}
+{"_id":{"$oid":"66f630e62c8a6e257c123a91"},"name":"Sân Ba Tháng Hai 3","sport":"Cầu lông","location":"Quận 11","capacity":6,"price":250000,"venueId":"66f628627694e4670873453e"}
+{"_id":{"$oid":"66f630e62c8a6e257c123a96"},"name":"Sân Trần Huy Liệu 2","sport":"Bóng chuyền","location":"Phú Nhuận","capacity":12,"price":350000,"venueId":"66f628627694e46708734540"}
+{"_id":{"$oid":"66f630e62c8a6e257c123a95"},"name":"Sân Trần Huy Liệu 1","sport":"Bóng đá","location":"Phú Nhuận","capacity":22,"price":550000,"venueId":"66f628627694e46708734540"}
+{"_id":{"$oid":"66f630e62c8a6e257c123a98"},"name":"Sân Phạm Văn Đồng 1","sport":"Bóng đá","location":"Bình Thạnh","capacity":22,"price":550000,"venueId":"66f628627694e46708734541"}
+{"_id":{"$oid":"66f630e62c8a6e257c123a9f"},"name":"Sân Nguyễn Văn Nghi 1","sport":"Bóng đá","location":"Gò Vấp","capacity":22,"price":500000,"venueId":"66f628627694e46708734542"}
+{"_id":{"$oid":"66f630e62c8a6e257c123a97"},"name":"Sân Trần Huy Liệu 3","sport":"Cầu lông","location":"Phú Nhuận","capacity":6,"price":250000,"venueId":"66f628627694e46708734540"}
+{"_id":{"$oid":"66f630e62c8a6e257c123aa0"},"name":"Sân Thanh Niên 3","sport":"Cầu lông","location":"Gò Vấp","capacity":6,"price":250000,"venueId":"66aa1814f2983e0241903e48"}
+{"_id":{"$oid":"66f630e62c8a6e257c123a9b"},"name":"Sân Ba Tháng Hai 1","sport":"Bóng đá","location":"Quận 11","capacity":22,"price":600000,"venueId":"66f628627694e4670873453e"}
+{"_id":{"$oid":"66f630e62c8a6e257c123a9d"},"name":"Sân Đào Duy Anh 1","sport":"Cầu lông","location":"Phú Nhuận","capacity":6,"price":250000,"venueId":"66aa147ef2983e0241903e41"}
+{"_id":{"$oid":"66f630e62c8a6e257c123aa3"},"name":"Sân Khang An 3","sport":"Cầu lông","location":"Gò Vấp","capacity":6,"price":250000,"venueId":"66aa1013f2983e0241903e3a"}
+{"_id":{"$oid":"66f630e62c8a6e257c123aa4"},"name":"Sân Kinh Dương Vương 1","sport":"Bóng đá","location":"Bình Tân","capacity":22,"price":500000,"venueId":"66f628627694e46708734545"}
+{"_id":{"$oid":"66f630e62c8a6e257c123aa2"},"name":"Sân Tý Đô 1","sport":"Bóng đá","location":"Gò Vấp","capacity":22,"price":500000,"venueId":"66aa15a6f2983e0241903e44"}
+{"_id":{"$oid":"66f630e62c8a6e257c123aa5"},"name":"Sân Kinh Dương Vương 2","sport":"Bóng chuyền","location":"Bình Tân","capacity":12,"price":350000,"venueId":"66f628627694e46708734545"}
+{"_id":{"$oid":"66f630e62c8a6e257c123aa6"},"name":"Sân Dương Bá Trạc 1","sport":"Bóng đá","location":"Quận 8","capacity":22,"price":500000,"venueId":"66f628627694e46708734546"}
+{"_id":{"$oid":"66f630e62c8a6e257c123aa7"},"name":"Sân Dương Bá Trạc 2","sport":"Cầu lông","location":"Quận 8","capacity":6,"price":250000,"venueId":"66f628627694e46708734546"}
+{"_id":{"$oid":"66f630e62c8a6e257c123aa8"},"name":"Sân Dương Bá Trạc 3","sport":"Bóng chuyền","location":"Quận 8","capacity":12,"price":350000,"venueId":"66f628627694e46708734546"}
+{"_id":{"$oid":"66f630e62c8a6e257c123aa9"},"name":"Sân Tôn Đản 1","sport":"Bóng đá","location":"Quận 4","capacity":22,"price":600000,"venueId":"66f628627694e46708734547"}
+{"_id":{"$oid":"66f630e62c8a6e257c123aab"},"name":"Sân Tôn Đản 3","sport":"Cầu lông","location":"Quận 4","capacity":6,"price":250000,"venueId":"66f628627694e46708734547"}
+{"_id":{"$oid":"66f630e62c8a6e257c123aaa"},"name":"Sân Tôn Đản 2","sport":"Bóng chuyền","location":"Quận 4","capacity":12,"price":350000,"venueId":"66f628627694e46708734547"}
+{"_id":{"$oid":"66f630e62c8a6e257c123aac"},"name":"Sân Tô Hiến Thành 2","sport":"Bóng chuyền","location":"Quận 10","capacity":12,"price":350000,"venueId":"66f628627694e46708734543"}
+{"_id":{"$oid":"66f630e62c8a6e257c123a9e"},"name":"Sân Tô Hiến Thành 1","sport":"Bóng đá","location":"Quận 10","capacity":22,"price":600000,"venueId":"66f628627694e46708734543"}
+{"_id":{"$oid":"66f630e62c8a6e257c123aa1"},"name":"Sân K34 2","sport":"Bóng bàn","location":"Tân Bình","capacity":4,"price":200000,"venueId":"66aa1173f2983e0241903e3d"}
+{"_id":{"$oid":"66f630e62c8a6e257c123ab0"},"name":"Sân Lê Lợi 3","sport":"Cầu lông","location":"Quận 7","capacity":6,"price":250000,"venueId":"66f628627694e46708734548"}
+{"_id":{"$oid":"66f630e62c8a6e257c123a99"},"name":"Sân Phạm Văn Đồng 2","sport":"Bóng chuyền","location":"Bình Thạnh","capacity":12,"price":350000,"venueId":"66f628627694e46708734541"}
+{"_id":{"$oid":"66f630e62c8a6e257c123aaf"},"name":"Sân Tô Hiến Thành 3","sport":"Cầu lông","location":"Quận 10","capacity":6,"price":250000,"venueId":"66f628627694e46708734543"}
+{"_id":{"$oid":"66f630e62c8a6e257c123ab1"},"name":"Sân Hòa Bình 2","sport":"Bóng chuyền","location":"Quận 3","capacity":12,"price":350000,"venueId":"66f628627694e46708734549"}
+{"_id":{"$oid":"66f630e62c8a6e257c123aad"},"name":"Sân Nguyễn Văn Nghi 3","sport":"Cầu lông","location":"Gò Vấp","capacity":6,"price":250000,"venueId":"66f628627694e46708734542"}
+{"_id":{"$oid":"66f630e62c8a6e257c123ab2"},"name":"Sân Hòa Bình 3","sport":"Cầu lông","location":"Quận 3","capacity":6,"price":250000,"venueId":"66f628627694e46708734549"}
+{"_id":{"$oid":"66f630e62c8a6e257c123ab3"},"name":"Sân Hòa Bình 1","sport":"Bóng đá","location":"Quận 3","capacity":22,"price":600000,"venueId":"66f628627694e46708734549"}
+{"_id":{"$oid":"66f630e62c8a6e257c123ab4"},"name":"Sân Nguyễn Văn Linh 1","sport":"Bóng đá","location":"Bình Chánh","capacity":22,"price":500000,"venueId":"66f628627694e4670873454a"}
+{"_id":{"$oid":"66f630e62c8a6e257c123ab5"},"name":"Sân Lý Thường Kiệt 2","sport":"Cầu lông","location":"Quận 10","capacity":6,"price":250000,"venueId":"66f628627694e4670873453d"}
+{"_id":{"$oid":"66f630e62c8a6e257c123ab6"},"name":"Sân Lê Lợi 1","sport":"Bóng đá","location":"Quận 7","capacity":22,"price":600000,"venueId":"66f628627694e46708734548"}
+{"_id":{"$oid":"66f630e62c8a6e257c123a9c"},"name":"Sân Nguyễn Văn Nghi 2","sport":"Bóng chuyền","location":"Gò Vấp","capacity":12,"price":350000,"venueId":"66f628627694e46708734542"}
+{"_id":{"$oid":"66f630e62c8a6e257c123ab7"},"name":"Sân Lý Chính Thắng 1","sport":"Bóng đá","location":"Quận 3","capacity":22,"price":600000,"venueId":"66f628627694e46708734544"}
+{"_id":{"$oid":"66f630e62c8a6e257c123ab8"},"name":"Sân Lý Chính Thắng 3","sport":"Cầu lông","location":"Quận 3","capacity":6,"price":250000,"venueId":"66f628627694e46708734544"}
+{"_id":{"$oid":"66f630e62c8a6e257c123ab9"},"name":"Sân Lý Chính Thắng 2","sport":"Bóng chuyền","location":"Quận 3","capacity":12,"price":350000,"venueId":"66f628627694e46708734544"}
+{"_id":{"$oid":"66f630e62c8a6e257c123aba"},"name":"Sân Nguyễn Văn Linh 2","sport":"Bóng chuyền","location":"Bình Chánh","capacity":12,"price":350000,"venueId":"66f628627694e4670873454a"}
+{"_id":{"$oid":"66f630e62c8a6e257c123aae"},"name":"Sân Lê Lợi 2","sport":"Bóng chuyền","location":"Quận 7","capacity":12,"price":350000,"venueId":"66f628627694e46708734548"}
+{"_id":{"$oid":"66f630e62c8a6e257c123a9a"},"name":"Sân Phạm Văn Đồng 3","sport":"Bóng bàn","location":"Bình Thạnh","capacity":4,"price":200000,"venueId":"66f628627694e46708734541"}
+{"_id":{"$oid":"66f630e62c8a6e257c123abb"},"name":"Sân Nguyễn Văn Linh 3","sport":"Cầu lông","location":"Bình Chánh","capacity":6,"price":250000,"venueId":"66f628627694e4670873454a"}
+{"_id":{"$oid":"66f630e62c8a6e257c123abc"},"name":"Sân Củ Chi 2","sport":"Bóng chuyền","location":"Củ Chi","capacity":12,"price":350000,"venueId":"66f628627694e4670873454b"}
+{"_id":{"$oid":"66f630e62c8a6e257c123abd"},"name":"Sân Củ Chi 3","sport":"Cầu lông","location":"Củ Chi","capacity":6,"price":250000,"venueId":"66f628627694e4670873454b"}
+{"_id":{"$oid":"66f630e62c8a6e257c123abf"},"name":"Sân Lũy Bán Bích 1","sport":"Bóng đá","location":"Quận Tân Phú","capacity":22,"price":500000,"venueId":"66f628627694e4670873454c"}
+{"_id":{"$oid":"66f630e62c8a6e257c123abe"},"name":"Sân Củ Chi 1","sport":"Bóng đá","location":"Củ Chi","capacity":22,"price":500000,"venueId":"66f628627694e4670873454b"}
+{"_id":{"$oid":"66f630e62c8a6e257c123ac1"},"name":"Sân Lũy Bán Bích 2","sport":"Bóng chuyền","location":"Quận Tân Phú","capacity":12,"price":350000,"venueId":"66f628627694e4670873454c"}
+{"_id":{"$oid":"66f630e62c8a6e257c123ac3"},"name":"Sân Nguyễn Du 2","sport":"Bóng chuyền","location":"Quận 1","capacity":12,"price":350000,"venueId":"66f628627694e4670873454d"}
+{"_id":{"$oid":"66f630e62c8a6e257c123ac7"},"name":"Sân Hoàng Hoa Thám 3","sport":"Cầu lông","location":"Quận Tân Bình","capacity":6,"price":250000,"venueId":"66f628627694e4670873454e"}
+{"_id":{"$oid":"66f630e62c8a6e257c123ac5"},"name":"Sân Hoàng Hoa Thám 2","sport":"Bóng chuyền","location":"Quận Tân Bình","capacity":12,"price":350000,"venueId":"66f628627694e4670873454e"}
+{"_id":{"$oid":"66f630e62c8a6e257c123ac4"},"name":"Sân Hoàng Hoa Thám 1","sport":"Bóng đá","location":"Quận Tân Bình","capacity":22,"price":600000,"venueId":"66f628627694e4670873454e"}
+{"_id":{"$oid":"66f630e62c8a6e257c123ac2"},"name":"Sân Nguyễn Du 1","sport":"Bóng đá","location":"Quận 1","capacity":22,"price":600000,"venueId":"66f628627694e4670873454d"}
+{"_id":{"$oid":"66f630e62c8a6e257c123ac6"},"name":"Sân Nguyễn Du 3","sport":"Cầu lông","location":"Quận 1","capacity":6,"price":250000,"venueId":"66f628627694e4670873454d"}
+{"_id":{"$oid":"66f630e62c8a6e257c123ac0"},"name":"Sân Lũy Bán Bích 3","sport":"Cầu lông","location":"Quận Tân Phú","capacity":6,"price":250000,"venueId":"66f628627694e4670873454c"}
+{"_id":{"$oid":"66f8f939862754295d32d136"},"name":"sân bk1","sport":"Bóng đá","location":"Quận 10","capacity":10,"price":1000000,"venueId":{"$oid":"66f8ec124315a31264652439"}}

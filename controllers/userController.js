@@ -570,10 +570,11 @@ async function removeMember(req, res) {
 
 async function getTeamInfo(req, res) {
   try {
-    const db= await connectToDB();
+    const db = await connectToDB();
     const userId = req.user.userId;
 
     const teamCollection = db.collection('team');
+    const userCollection = db.collection('users'); // Collection chứa thông tin người dùng
     const objectId = ObjectId.createFromHexString(userId);
 
     // Tìm đội mà người dùng là đội trưởng hoặc thành viên
@@ -584,12 +585,24 @@ async function getTeamInfo(req, res) {
     if (!team) {
       return res.status(404).json({
         ec: 1,  // Lỗi: Không tìm thấy đội
-        
         msg: 'Người dùng không thuộc bất kỳ đội nào',
       });
     }
 
-    // Trả về thông tin đội
+    // Truy vấn thông tin của các thành viên từ collection 'users' dựa trên danh sách memberIds
+    const memberIds = team.members || [];
+    const membersInfo = await userCollection.find(
+      { _id: { $in: memberIds } }, // Tìm tất cả người dùng có _id nằm trong danh sách memberIds
+      { projection: { _id:1, username: 1 } } // Chỉ lấy _id và tên của thành viên
+    ).toArray();
+
+    // Truy vấn thông tin của đội trưởng
+    const captainInfo = await userCollection.findOne(
+      { _id: team.captain },
+      { projection: { _id: 1, username: 1 } } // Lấy _id và tên của đội trưởng
+    );
+
+    // Trả về thông tin đội và danh sách thành viên cùng với tên đội trưởng
     res.json({
       ec: 0,  // Thành công
       total: 1,
@@ -598,8 +611,11 @@ async function getTeamInfo(req, res) {
         name: team.name,
         description: team.description,
         sport: team.sport,
-        captain: team.captain,
-        members: team.members
+        captain: {
+          _id: captainInfo._id,
+          username: captainInfo.username, // Trả về tên của đội trưởng
+        },
+        members: membersInfo // Trả về thông tin của các thành viên với tên và _id
       },
       msg: 'Lấy thông tin đội thành công',
     });
@@ -607,11 +623,14 @@ async function getTeamInfo(req, res) {
     console.error('Lỗi khi lấy thông tin đội:', err);
     res.status(500).json({
       ec: 2,  // Lỗi server
-      
       msg: 'Lỗi server khi lấy thông tin đội',
     });
-  } 
+  }
 }
+
+
+
+
 
 //field
 async function searchField(req, res) {

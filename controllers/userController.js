@@ -572,41 +572,39 @@ async function getTeamInfo(req, res) {
   try {
     const db = await connectToDB();
     const userId = req.user.userId;
+    const objectId = ObjectId.createFromHexString(userId);
 
     const teamCollection = db.collection('team');
     const userCollection = db.collection('users'); // Collection chứa thông tin người dùng
-    const objectId = ObjectId.createFromHexString(userId);
 
-    // Tìm đội mà người dùng là đội trưởng hoặc thành viên
-    const team = await teamCollection.findOne({
+    // Tìm tất cả các đội mà người dùng là đội trưởng hoặc thành viên
+    const teams = await teamCollection.find({
       $or: [{ captain: objectId }, { members: objectId }]
-    });
+    }).toArray();
 
-    if (!team) {
+    if (teams.length === 0) {
       return res.status(404).json({
         ec: 1,  // Lỗi: Không tìm thấy đội
         msg: 'Người dùng không thuộc bất kỳ đội nào',
       });
     }
 
-    // Truy vấn thông tin của các thành viên từ collection 'users' dựa trên danh sách memberIds
-    const memberIds = team.members || [];
-    const membersInfo = await userCollection.find(
-      { _id: { $in: memberIds } }, // Tìm tất cả người dùng có _id nằm trong danh sách memberIds
-      { projection: { _id:1, username: 1 } } // Chỉ lấy _id và tên của thành viên
-    ).toArray();
+    // Truy vấn thông tin của các đội, bao gồm danh sách thành viên và đội trưởng
+    const teamDetails = await Promise.all(teams.map(async team => {
+      // Lấy thông tin các thành viên
+      const memberIds = team.members || [];
+      const membersInfo = await userCollection.find(
+        { _id: { $in: memberIds } }, // Tìm tất cả người dùng có _id nằm trong danh sách memberIds
+        { projection: { _id: 1, username: 1 } } // Chỉ lấy _id và tên của thành viên
+      ).toArray();
 
-    // Truy vấn thông tin của đội trưởng
-    const captainInfo = await userCollection.findOne(
-      { _id: team.captain },
-      { projection: { _id: 1, username: 1 } } // Lấy _id và tên của đội trưởng
-    );
+      // Lấy thông tin đội trưởng
+      const captainInfo = await userCollection.findOne(
+        { _id: team.captain },
+        { projection: { _id: 1, username: 1 } } // Lấy _id và tên của đội trưởng
+      );
 
-    // Trả về thông tin đội và danh sách thành viên cùng với tên đội trưởng
-    res.json({
-      ec: 0,  // Thành công
-      total: 1,
-      data: {
+      return {
         teamId: team._id,
         name: team.name,
         description: team.description,
@@ -616,17 +614,26 @@ async function getTeamInfo(req, res) {
           username: captainInfo.username, // Trả về tên của đội trưởng
         },
         members: membersInfo // Trả về thông tin của các thành viên với tên và _id
-      },
-      msg: 'Lấy thông tin đội thành công',
+      };
+    }));
+
+    // Trả về danh sách tất cả các đội mà người dùng tham gia
+    res.json({
+      ec: 0,  // Thành công
+      total: teamDetails.length,
+      data: teamDetails,
+      msg: 'Lấy danh sách đội thành công',
     });
   } catch (err) {
-    console.error('Lỗi khi lấy thông tin đội:', err);
+    console.error('Lỗi khi lấy danh sách đội:', err);
     res.status(500).json({
       ec: 2,  // Lỗi server
-      msg: 'Lỗi server khi lấy thông tin đội',
+      msg: 'Lỗi server khi lấy danh sách đội',
     });
   }
 }
+
+
 
 
 

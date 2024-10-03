@@ -487,6 +487,7 @@ async function deletePromotion(req, res) {
     });
   } 
 }
+//user
 async function getAllUsers(req, res) {
   try {
     const { page = 1, record = 10 } = req.query;  // Nhận thông tin phân trang từ query parameters và đổi limit thành record
@@ -517,8 +518,6 @@ async function getAllUsers(req, res) {
     });
   }
 }
-
-
 async function getUserById(req, res) {
   try {
     const { id } = req.params;
@@ -641,7 +640,7 @@ async function resetPassword(req, res) {
     });
   }
 }
-
+//booking
 async function getAllBooking(req, res) {
   try {
     const db = await connectToDB();
@@ -727,6 +726,190 @@ async function getAllBooking(req, res) {
     });
   }
 }
+//team
+async function getAllTeams(req, res) {
+  try {
+    const db = await connectToDB();
+    const teamCollection = db.collection('team');
+    const userCollection = db.collection('users'); // Collection chứa thông tin người dùng
+
+    // Lấy thông tin phân trang từ yêu cầu
+    const { page = 1, record = 10 } = req.query; // Mặc định là trang 1 và số bản ghi trên mỗi trang là 10
+    const skip = (page - 1) * record; // Tính toán số lượng bản ghi cần bỏ qua
+
+    // Lấy tổng số đội
+    const totalTeams = await teamCollection.countDocuments({});
+    const totalPages = Math.ceil(totalTeams / record); // Tính tổng số trang
+
+    // Lấy danh sách các đội theo phân trang
+    const teams = await teamCollection.find({})
+      .skip(skip) // Bỏ qua các bản ghi trước đó
+      .limit(parseInt(record)) // Giới hạn số bản ghi được trả về
+      .toArray();
+
+    // Kiểm tra nếu không có đội nào
+    if (teams.length === 0) {
+      return res.status(404).json({
+        ec: 1,  // Lỗi: Không tìm thấy đội
+        msg: 'Không có đội nào trong hệ thống',
+      });
+    }
+
+    // Lấy thông tin chi tiết cho từng đội
+    const teamDetails = await Promise.all(teams.map(async team => {
+      // Lấy thông tin đội trưởng
+      const captainInfo = await userCollection.findOne(
+        { _id: team.captain },
+        { projection: { _id: 1, username: 1 } } // Lấy _id và tên của đội trưởng
+      );
+
+      // Lấy thông tin các thành viên
+      const memberIds = team.members || [];
+      const membersInfo = await userCollection.find(
+        { _id: { $in: memberIds } },
+        { projection: { _id: 1, username: 1 } } // Chỉ lấy _id và tên của thành viên
+      ).toArray();
+
+      return {
+        teamId: team._id,
+        name: team.name,
+        description: team.description,
+        sport: team.sport,
+        captain: captainInfo ? {
+          _id: captainInfo._id,
+          username: captainInfo.username // Trả về tên của đội trưởng
+        } : null, // Trường hợp không tìm thấy đội trưởng
+        members: membersInfo // Trả về thông tin của các thành viên với tên và _id
+      };
+    }));
+
+    // Trả về danh sách các đội với thông tin phân trang
+    res.json({
+      ec: 0,  // Thành công
+      total: totalTeams, // Tổng số đội
+      data: teamDetails, // Dữ liệu đội
+      msg: 'Lấy danh sách đội thành công',
+    });
+  } catch (err) {
+    console.error('Lỗi khi lấy danh sách đội:', err);
+    res.status(500).json({
+      ec: 2,  // Lỗi server
+      msg: 'Lỗi server khi lấy danh sách đội',
+    });
+  }
+}
+async function adminCreateTeam(req, res) {
+  try {
+    const db = await connectToDB();
+    const { name, description, sport, captainEmail, memberEmails } = req.body;
+
+    // Kiểm tra đầu vào
+    if (!name || !description || !sport || !captainEmail) {
+      return res.status(400).json({
+        ec: 1, // Lỗi: Thiếu thông tin cần thiết       
+        msg: 'Thiếu thông tin cần thiết',
+      });
+    }
+
+    const teamCollection = db.collection('team');
+    const userCollection = db.collection('users');
+
+    // Tìm đội trưởng theo email
+    const captain = await userCollection.findOne({ email: captainEmail });
+    if (!captain) {
+      return res.status(404).json({
+        ec: 1, // Lỗi: Không tìm thấy đội trưởng
+        msg: 'Không tìm thấy đội trưởng với email đã cung cấp',
+      });
+    }
+
+    const captainId = captain._id;
+
+    // Kiểm tra xem người dùng có phải đội trưởng của đội khác không
+    const existingTeam = await teamCollection.findOne({ captain: captainId });
+    if (existingTeam) {
+      return res.status(400).json({
+        ec: 1, // Lỗi: Người dùng đã là đội trưởng của đội khác
+        msg: 'Người này đã là đội trưởng của đội khác',
+      });
+    }
+
+    // Tìm các thành viên dựa trên danh sách email
+    const members = await userCollection.find({ email: { $in: memberEmails || [] } }).toArray();
+    const memberIds = members.map(member => member._id);
+
+    // Chỉ thêm những thành viên tìm thấy, không trả về lỗi nếu không tìm thấy email nào
+    // (Bỏ qua các email không tồn tại)
+
+    // Tạo team mới
+    const team = {
+      name,
+      description,
+      sport,
+      captain: captainId,
+      members: [captainId, ...memberIds], // Đội trưởng và các thành viên
+    };
+
+    const result = await teamCollection.insertOne(team);
+
+    // Phản hồi thành công
+    res.json({
+      ec: 0,
+      data: { teamId: result.insertedId },
+      msg: 'Tạo đội thành công',
+    });
+  } catch (err) {
+    console.error('Lỗi tạo đội:', err);
+    res.status(500).json({
+      ec: 2,
+      msg: 'Lỗi server khi tạo đội',
+    });
+  }
+}
+async function deleteTeam(req, res) {
+  try {
+    const db = await connectToDB();
+    const { teamId } = req.params; // Lấy teamId từ URL params
+
+    if (!teamId) {
+      return res.status(400).json({
+        ec: 1, // Lỗi: Thiếu thông tin teamId
+        msg: 'Thiếu teamId để xóa đội',
+      });
+    }
+
+    const teamCollection = db.collection('team');
+    const objectId = ObjectId.createFromHexString(teamId); // Chuyển teamId sang ObjectId
+
+    // Kiểm tra xem đội có tồn tại không
+    const team = await teamCollection.findOne({ _id: objectId });
+    if (!team) {
+      return res.status(404).json({
+        ec: 1, // Lỗi: Không tìm thấy đội
+        msg: 'Không tìm thấy đội với teamId đã cung cấp',
+      });
+    }
+
+    // Xóa đội khỏi collection
+    await teamCollection.deleteOne({ _id: objectId });
+
+    // Phản hồi thành công
+    res.json({
+      ec: 0, // Thành công
+      msg: 'Xóa đội thành công',
+    });
+  } catch (err) {
+    console.error('Lỗi khi xóa đội:', err);
+    res.status(500).json({
+      ec: 2, // Lỗi server
+      msg: 'Lỗi server khi xóa đội',
+    });
+  }
+}
+
+
+
+
 
 
 
@@ -824,6 +1007,7 @@ async function getTotalRevenue(req, res){
 module.exports = {createField,removeField,createVenue,removeVenue
   ,createPromotion,deletePromotion,getPromotionById,updatePromotion,getAllPromotion,
   getAllUsers,getUserById, deleteUser,resetPassword,
+  getAllTeams,adminCreateTeam,deleteTeam,
   getAllBooking,
   getTotalRevenue
 }

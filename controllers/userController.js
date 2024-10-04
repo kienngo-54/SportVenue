@@ -707,9 +707,14 @@ async function getBooking(req, res) {
     const db = await connectToDB(); // Kết nối đến database
     const bookingsCollection = db.collection('booking');
 
-    // Lấy danh sách các booking của người dùng, sắp xếp theo thời gian tạo mới nhất
+    const currentDateTime = new Date(); // Lấy thời gian hiện tại
+
+    // Lấy danh sách các booking chưa bắt đầu của người dùng, sắp xếp theo thời gian tạo mới nhất
     const bookings = await bookingsCollection
-      .find({ user: ObjectId.createFromHexString(userId) }) // Lọc theo userId
+      .find({
+        user: ObjectId.createFromHexString(userId), // Lọc theo userId
+        startTime: { $gt: currentDateTime } // Lọc các booking có startTime lớn hơn thời gian hiện tại
+      })
       .sort({ createdAt: -1 }) // Sắp xếp theo thứ tự mới nhất
       .skip((page - 1) * record) // Bỏ qua các kết quả của trang trước
       .limit(record) // Giới hạn kết quả trả về tối đa 10 bản ghi
@@ -738,6 +743,7 @@ async function getBooking(req, res) {
     });
   }
 }
+
 
 
 

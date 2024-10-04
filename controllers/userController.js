@@ -1,4 +1,5 @@
 const { ObjectId} = require('mongodb');
+const axios = require('axios');
 const bcrypt = require('bcryptjs');
 const User = require('../models/user');
 const Team= require('../models/team');
@@ -97,7 +98,7 @@ async function loginUser(req, res) {
     return res.json({
       ec: 0,  // Thành công
       total: 1,
-      data: { token, userId: user._id, email: user.email, role: user.role },
+      data: { token, userId: user._id,username: user.username ,email: user.email, role: user.role },
       msg: 'Đăng nhập thành công',
     });
   } catch (err) {
@@ -612,7 +613,7 @@ async function getTeamInfo(req, res) {
       const memberIds = team.members || [];
       const membersInfo = await userCollection.find(
         { _id: { $in: memberIds } }, // Tìm tất cả người dùng có _id nằm trong danh sách memberIds
-        { projection: { _id: 1, username: 1 } } // Chỉ lấy _id và tên của thành viên
+        { projection: { _id: 1, username: 1,email:1 } } // Chỉ lấy _id và tên của thành viên
       ).toArray();
 
       // Lấy thông tin đội trưởng
@@ -1213,6 +1214,81 @@ async function respondToMatchRequest(req, res) {
 
 
 
+// Lấy access token từ PayPal
+const getPayPalAccessToken = async () => {
+  const PAYPAL_CLIENT_ID = process.env.CLIENT_ID;
+  const PAYPAL_SECRET = process.env.SECRET;
+  
+  const response = await axios({
+    url: 'https://api-m.sandbox.paypal.com/v1/oauth2/token',
+    method: 'post',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    auth: {
+      username: PAYPAL_CLIENT_ID,
+      password: PAYPAL_SECRET,
+    },
+    data: 'grant_type=client_credentials',
+  });
+
+  return response.data.access_token; // Trả về access token
+};
+async function createOrder(req, res) {
+  try {
+    // Lấy bookingId và totalAmount từ body request
+    const { bookingId, totalAmount } = req.body;
+
+    // Kiểm tra xem bookingId và totalAmount có được cung cấp hay không
+    if (!bookingId || !totalAmount) {
+      return res.status(400).json({
+        ec: 1,
+        msg: 'Thiếu thông tin bookingId hoặc totalAmount để tạo đơn hàng',
+      });
+    }
+
+    const accessToken = await getPayPalAccessToken();
+
+    // Gọi API PayPal để tạo đơn hàng
+    const response = await axios({
+      url: 'https://api-m.sandbox.paypal.com/v2/checkout/orders',
+      method: 'post',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      data: {
+        intent: 'CAPTURE', // Có thể thay đổi tùy thuộc vào ý định của bạn
+        purchase_units: [
+          {
+            amount: {
+              currency_code: 'USD', // Hoặc mã tiền tệ khác nếu cần
+              value: totalAmount.toString(), // Đảm bảo giá trị là chuỗi
+            },
+          },
+        ],
+      },
+    });
+
+    // Phản hồi với dữ liệu từ PayPal
+    res.json({
+      ec: 0,
+      msg: 'Tạo đơn hàng thành công',
+      data: response.data, // Trả về dữ liệu từ PayPal
+    });
+  } catch (err) {
+    console.error('Lỗi khi tạo đơn hàng:', err);
+    res.status(500).json({
+      ec: 2,
+      msg: 'Lỗi server khi tạo đơn hàng',
+    });
+  }
+};
+
+
+
+
+
 
 
 
@@ -1254,5 +1330,6 @@ module.exports = { registerUser,loginUser,getUserInfo,addOrUpdateAddress,addOrUp
   searchReferee,
   searchTrainer,
   createBooking,
-  sendMatchRequest,getMatchRequests,respondToMatchRequest
+  sendMatchRequest,getMatchRequests,respondToMatchRequest,
+  createOrder,
 };

@@ -34,6 +34,6 @@ router.delete('/team/:teamId',verifyToken,checkAdminRole,deleteTeam);
 //
 router.get('/booking',verifyToken,checkAdminRole,getAllBooking)
 
-//report
+
 
 module.exports = router;

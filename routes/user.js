@@ -6,7 +6,7 @@ const { registerUser,loginUser,getUserInfo,changePass,addOrUpdateAddress,addOrUp
   searchEquipment,
   searchReferee,
   searchTrainer,
-  createBooking,
+  createBooking,getBooking,
   sendMatchRequest, getMatchRequests,respondToMatchRequest,
   createOrder} = require('../controllers/userController');
 const verifyToken = require('../utils/vertifyToken');
@@ -31,6 +31,7 @@ router.get('/referee',verifyToken,searchReferee);
 router.get('/trainer',verifyToken,searchTrainer);
 //booking
 router.post('/booking',verifyToken,createBooking);
+router.get('/booking',verifyToken,getBooking);
 //matching
 router.post('/matching',verifyToken, sendMatchRequest);
 router.get('/matching',verifyToken, getMatchRequests);

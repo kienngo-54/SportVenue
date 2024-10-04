@@ -698,6 +698,52 @@ async function updateTeam(req, res){
   }
 };
 
+async function getBooking(req, res) {
+  try {
+    const userId = req.user.userId; // Lấy userId từ thông tin đăng nhập
+    const page = parseInt(req.query.page) || 1; // Lấy trang hiện tại, mặc định là trang 1
+    const record = 10; // Số lượng booking trả về tối đa là 10
+
+    const db = await connectToDB(); // Kết nối đến database
+    const bookingsCollection = db.collection('booking');
+
+    // Lấy danh sách các booking của người dùng, sắp xếp theo thời gian tạo mới nhất
+    const bookings = await bookingsCollection
+      .find({ user: ObjectId.createFromHexString(userId) }) // Lọc theo userId
+      .sort({ createdAt: -1 }) // Sắp xếp theo thứ tự mới nhất
+      .skip((page - 1) * record) // Bỏ qua các kết quả của trang trước
+      .limit(record) // Giới hạn kết quả trả về tối đa 10 bản ghi
+      .toArray(); // Chuyển đổi kết quả thành mảng
+
+    // Nếu không có booking nào
+    if (bookings.length === 0) {
+      return res.status(404).json({
+        ec: 1, // Không có lịch sử booking
+        msg: 'Không tìm thấy lịch sử đặt sân',
+        data: [],
+      });
+    }
+
+    // Trả về danh sách booking
+    res.status(200).json({
+      ec: 0, // Thành công
+      data: bookings,
+      msg: 'Lấy lịch sử đặt sân thành công',
+    });
+  } catch (err) {
+    console.error('Lỗi khi lấy lịch sử booking:', err);
+    res.status(500).json({
+      ec: 2, // Lỗi server
+      msg: 'Lỗi server khi lấy lịch sử đặt sân',
+    });
+  }
+}
+
+
+
+
+
+
 
 
 //field
@@ -726,6 +772,7 @@ async function searchField(req, res) {
         $match: {
           startTime: { $lt: endDateTime },
           endTime: { $gt: startDateTime },
+          
         },
       },
       {
@@ -1374,7 +1421,7 @@ module.exports = { registerUser,loginUser,getUserInfo,addOrUpdateAddress,addOrUp
   searchEquipment,
   searchReferee,
   searchTrainer,
-  createBooking,
+  createBooking,getBooking,
   sendMatchRequest,getMatchRequests,respondToMatchRequest,
   createOrder,
 };

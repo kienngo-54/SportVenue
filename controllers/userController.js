@@ -703,14 +703,12 @@ async function updateTeam(req, res){
 //field
 async function searchField(req, res) {
   try {
-    const { date, startTime, endTime, location, sport, capacity, page = 1 } = req.query;
-    const limit = 10; // Số kết quả mỗi trang
+    const { date, startTime, endTime, location, sport, capacity, page = 1, record = 10 } = req.query; // Số kết quả mỗi trang
 
     // Kiểm tra các tham số bắt buộc
     if (!date || !startTime || !endTime) {
       return res.status(400).json({
         ec: 1,  // Lỗi thiếu thông tin
-        
         msg: 'Thiếu thông tin bắt buộc: date, startTime, hoặc endTime',
       });
     }
@@ -719,8 +717,7 @@ async function searchField(req, res) {
     const startDateTime = new Date(`${date}T${startTime}:00`);
     const endDateTime = new Date(`${date}T${endTime}:00`);
 
-    const db= await connectToDB(); // Kết nối đến MongoDB
-
+    const db = await connectToDB(); // Kết nối đến MongoDB
     const bookingsCollection = db.collection('booking');
 
     // Tìm các sân đã được đặt trong khoảng thời gian này
@@ -758,12 +755,12 @@ async function searchField(req, res) {
     const fieldsCollection = db.collection('field');
 
     // Tính toán số lượng bản ghi cần bỏ qua
-    const skip = (page - 1) * limit;
+    const skip = (page - 1) * record;
 
     // Lấy danh sách các sân trống với phân trang
-    const availableFields = await fieldsCollection.find(searchCriteria).skip(skip).limit(limit).toArray();
+    const availableFields = await fieldsCollection.find(searchCriteria).skip(skip).limit(parseInt(record)).toArray();
 
-    // Lấy tổng số lượng sân hợp lệ để tính số trang
+    // Lấy tổng số lượng sân trống phù hợp với tiêu chí tìm kiếm
     const totalFields = await fieldsCollection.countDocuments(searchCriteria);
 
     // Kiểm tra và trả về kết quả
@@ -776,16 +773,14 @@ async function searchField(req, res) {
     }
 
     // Tính toán tổng số trang
-    const totalPages = Math.ceil(totalFields / limit);
+    const totalPages = Math.ceil(totalFields / record);
 
     res.status(200).json({
       ec: 0,  // Thành công
-      total: availableFields.length,
-      
-      totalPages: totalPages, // Tổng số trang
-      currentPage: parseInt(page), // Trang hiện tại
+      total: totalFields, // Trả về tổng số sân trống
       data: availableFields, // Trả về mảng thông tin về các sân hợp lệ
       msg: 'Tìm thấy các sân trống',
+      totalPages: totalPages, // Trả về tổng số trang
     });
   } catch (err) {
     console.error('Lỗi khi tìm kiếm sân:', err);
@@ -796,6 +791,7 @@ async function searchField(req, res) {
     });
   }
 }
+
 
 
 //equipmment

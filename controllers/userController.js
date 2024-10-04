@@ -91,7 +91,7 @@ async function loginUser(req, res) {
 
     // Tạo token cho người dùng
     const token = jwt.sign({ userId: user._id, email: user.email, role: user.role }, process.env.SECRET_KEY, {
-      expiresIn: '3h',
+      expiresIn: '200h',
     });
 
     // Trả về thông tin thành công và token
@@ -512,9 +512,6 @@ async function addMember(req, res) {
     });
   }
 }
-
-
-
 async function removeMember(req, res) {
   try {
     const db= await connectToDB();
@@ -583,7 +580,6 @@ async function removeMember(req, res) {
     });
   } 
 }
-
 async function getTeamInfo(req, res) {
   try {
     const db = await connectToDB();
@@ -650,11 +646,57 @@ async function getTeamInfo(req, res) {
     });
   }
 }
+async function updateTeam(req, res){
+  try {
+    const { name, description, sport } = req.body; // Lấy dữ liệu từ body request
+    const userId = req.user.userId; // Lấy ID của đội trưởng từ token đã verify
+
+    const db = await connectToDB(); // Kết nối tới cơ sở dữ liệu
+    const teamsCollection = db.collection('team');
+
+    // Tìm đội dựa trên ID của đội trưởng
+    const captainId=ObjectId.createFromHexString(userId);
+    const team = await teamsCollection.findOne({ captain: captainId});
+
+    // Kiểm tra nếu không tìm thấy đội
+    if (!team) {
+      return res.status(404).json({
+        ec: 1, // Không tìm thấy dữ liệu
+        msg: 'Không tìm thấy đội do đội trưởng quản lý.',
+      });
+    }
+    const updateFields = {};
+    if (name) updateFields.name = name;
+    if (description) updateFields.description = description;
+    if (sport) updateFields.sport = sport;
 
 
+    // Cập nhật đội
+    const result = await teamsCollection.updateOne(
+      { _id: team._id },
+      { $set: updateFields  }
+    );
 
+    // Kiểm tra xem đội đã được cập nhật hay chưa
+    if (result.matchedCount === 0) {
+      return res.status(404).json({
+        ec: 1, // Không tìm thấy dữ liệu
+        msg: 'Không tìm thấy đội để cập nhật.',
+      });
+    }
 
-
+    res.status(200).json({
+      ec: 0, // Thành công
+      msg: 'Cập nhật đội thành công.',
+    });
+  } catch (error) {
+    console.error('Error updating team:', error);
+    res.status(500).json({
+      ec: 1, // Lỗi hệ thống
+      msg: 'Đã xảy ra lỗi khi cập nhật đội.',
+    });
+  }
+};
 
 
 
@@ -1324,7 +1366,7 @@ async function createOrder(req, res) {
 
 
 module.exports = { registerUser,loginUser,getUserInfo,addOrUpdateAddress,addOrUpdatePhoneNumber,changePass,updateUserName,
-  createTeam, addMember,removeMember,getTeamInfo,
+  createTeam, addMember,removeMember,getTeamInfo,updateTeam,
   searchField,
   searchEquipment,
   searchReferee,

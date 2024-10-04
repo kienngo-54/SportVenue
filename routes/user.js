@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { registerUser,loginUser,getUserInfo,changePass,addOrUpdateAddress,addOrUpdatePhoneNumber,updateUserName,
-  createTeam,addMember,removeMember,getTeamInfo,
+  createTeam,addMember,removeMember,getTeamInfo,updateTeam,
   searchField,
   searchEquipment,
   searchReferee,
@@ -23,6 +23,7 @@ router.post('/team',verifyToken,createTeam);
 router.patch('/team',verifyToken,addMember);
 router.delete('/team',verifyToken,removeMember);
 router.get('/team',verifyToken,getTeamInfo);
+router.put('/team',verifyToken,updateTeam);
 //field
 router.get('/field',verifyToken,searchField);
 router.get('/equipment',verifyToken,searchEquipment);

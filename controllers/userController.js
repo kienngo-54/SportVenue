@@ -791,9 +791,6 @@ async function searchField(req, res) {
     });
   }
 }
-
-
-
 //equipmment
 async function searchEquipment(req, res) {
   try {
@@ -984,31 +981,38 @@ async function searchTrainer(req, res) {
 //booking
 async function createBooking(req, res) {
   try {
-    const { fieldId, startTime, endTime, equipmentId, refereeId, trainerId } = req.body;
+    const { fieldId, date, startTime, endTime, equipmentId, refereeId, trainerId } = req.body;
     const userId = req.user.userId;
 
-    if (!fieldId || !startTime || !endTime) {
-      return res.status(400).json({ ec: 1, msg: 'Thiếu thông tin cần thiết.' });
+    // Kiểm tra các thông tin cần thiết
+    if (!fieldId || !date || !startTime || !endTime) {
+      return res.status(400).json({ ec: 1, msg: 'Thiếu thông tin cần thiết: fieldId, date, startTime hoặc endTime.' });
     }
 
-    if (new Date(startTime) >= new Date(endTime)) {
+    // Chuyển đổi các thông số ngày giờ
+    const startDateTime = new Date(`${date}T${startTime}:00`);
+    const endDateTime = new Date(`${date}T${endTime}:00`);
+
+    // Kiểm tra thời gian
+    if (startDateTime >= endDateTime) {
       return res.status(400).json({ ec: 1, msg: 'Thời gian kết thúc phải sau thời gian bắt đầu.' });
     }
 
-    const db= await connectToDB();
+    const db = await connectToDB();
 
-    // Kiểm tra xem sân đã có người đặt vào khung giờ này hay chưa
+    // Kiểm tra xem sân đã được đặt vào khung giờ này chưa
     const bookingsCollection = db.collection('booking');
     const isBooked = await bookingsCollection.findOne({
       field: ObjectId.createFromHexString(fieldId),
       $or: [
-        { startTime: { $lt: new Date(endTime) }, endTime: { $gt: new Date(startTime) } }
+        { startTime: { $lt: endDateTime }, endTime: { $gt: startDateTime } }
       ]
     });
 
     if (isBooked) {
       return res.status(409).json({ ec: 1, msg: 'Sân đã được đặt vào khung giờ này.' });
     }
+
     let totalPrice = 0;
 
     // Tìm thông tin sân
@@ -1048,15 +1052,17 @@ async function createBooking(req, res) {
         totalPrice += trainer.price;
       }
     }
-    
-    const newBooking = new Booking({
+
+    // Tạo booking mới
+    const newBooking = {
       user: ObjectId.createFromHexString(userId),
       field: ObjectId.createFromHexString(fieldId),
-      startTime: new Date(startTime),
-      endTime: new Date(endTime),
+      startTime: startDateTime,
+      endTime: endDateTime,
       totalPrice,
       status: 'unpaid',
-    });
+      createdAt: new Date(),
+    };
 
     const result = await bookingsCollection.insertOne(newBooking);
     res.status(200).json({ ec: 0, data: { bookingId: result.insertedId }, msg: 'Đặt sân thành công.' });
@@ -1066,6 +1072,7 @@ async function createBooking(req, res) {
     res.status(500).json({ ec: 2, msg: 'Đã xảy ra lỗi khi đặt sân.' });
   }
 }
+
 //matching
 async function sendMatchRequest(req, res) {
   try {

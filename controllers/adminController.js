@@ -506,7 +506,7 @@ async function getAllUsers(req, res) {
     // Trả về danh sách người dùng theo format yêu cầu
     res.status(200).json({
       ec: 0,  // Thành công
-      record: users.length,  // Số người dùng trả về
+      total: totalUsers.length,
       data: users,  // Dữ liệu trả về (danh sách người dùng)
       msg: 'Lấy danh sách người dùng thành công',
     });

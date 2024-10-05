@@ -110,6 +110,40 @@ async function removeField(req, res) {
     });
   } 
 }
+async function getFieldsByVenueId(req, res) {
+  try {
+    const db = await connectToDB(); // Kết nối đến cơ sở dữ liệu
+    const fieldsCollection = db.collection('field'); // Collection chứa thông tin sân
+
+    const { venueId} = req.params;  // Lấy venueId từ tham số URL
+
+    
+   
+
+    // Lấy danh sách các sân thuộc venueId
+    const fields = await fieldsCollection.find({ venueId: venueId }).toArray();
+
+    
+    
+
+    // Trả về danh sách sân
+    res.status(200).json({
+      ec: 0, // Thành công
+      total: fields.length,
+      data: fields, // Dữ liệu sân
+      msg: 'Lấy danh sách sân thành công.',
+    });
+  } catch (error) {
+    console.error('Lỗi khi lấy danh sách sân:', error);
+    res.status(500).json({
+      ec: 2, // Lỗi server
+      msg: 'Đã xảy ra lỗi khi lấy danh sách sân.',
+    });
+  }
+}
+
+
+
 async function createVenue(req, res) {
   try {
     const { name, location } = req.body;
@@ -191,6 +225,50 @@ async function removeVenue(req, res) {
     });
   }
 }
+async function getAllVenue(req, res) {
+  try {
+    // Kết nối đến cơ sở dữ liệu
+    const db = await connectToDB();
+    const fieldsCollection = db.collection('venue'); // Collection chứa thông tin sân
+
+    // Lấy tham số phân trang từ query parameters
+    const page = parseInt(req.query.page) || 1; // Trang hiện tại, mặc định là trang 1
+    const record = parseInt(req.query.record) || 10; // Số bản ghi trên mỗi trang, mặc định là 10
+
+    // Tính toán số lượng địa điểm cần bỏ qua
+    const skip = (page - 1) * record;
+
+    // Lấy danh sách địa điểm với phân trang
+    const venues = await fieldsCollection.find({})
+      .skip(skip) // Bỏ qua số địa điểm tương ứng với trang
+      .limit(record) // Giới hạn số địa điểm trên mỗi trang
+      .toArray();
+
+    // Tính tổng số địa điểm để tính toán số trang
+    const totalVenues = await fieldsCollection.countDocuments({}); // Đếm tổng số địa điểm
+
+    // Tính tổng số trang
+    const totalPages = Math.ceil(totalVenues / record); // Tính số trang
+
+    // Trả về danh sách địa điểm với thông tin phân trang
+    res.status(200).json({
+      ec: 0, // Thành công
+      total: venues.length, // Tổng số địa điểm trong trang
+      data: venues, // Dữ liệu địa điểm
+      msg: 'Lấy danh sách địa điểm thành công.',
+    });
+  } catch (error) {
+    console.error('Lỗi khi lấy danh sách địa điểm:', error);
+    res.status(500).json({
+      ec: 2, // Lỗi server
+      msg: 'Đã xảy ra lỗi khi lấy danh sách địa điểm.',
+    });
+  }
+}
+
+
+
+
 
 
 // // trainers
@@ -1004,7 +1082,7 @@ async function getTotalRevenue(req, res){
 
 
 
-module.exports = {createField,removeField,createVenue,removeVenue
+module.exports = {createField,removeField,getFieldsByVenueId,createVenue,removeVenue,getAllVenue
   ,createPromotion,deletePromotion,getPromotionById,updatePromotion,getAllPromotion,
   getAllUsers,getUserById, deleteUser,resetPassword,
   getAllTeams,adminCreateTeam,deleteTeam,

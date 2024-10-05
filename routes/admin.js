@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const {createField,removeField,createVenue,removeVenue,
+const {createField,removeField,getFieldsByVenueId,createVenue,removeVenue,getAllVenue,
     createPromotion,deletePromotion,getPromotionById,updatePromotion,getAllPromotion,
     getAllTeams,adminCreateTeam,deleteTeam,
     getAllUsers,getUserById, deleteUser,resetPassword,
@@ -12,9 +12,11 @@ const checkAdminRole = require('../utils/checkAdminRole');
 //quan lý sân
 router.post('/field', verifyToken,checkAdminRole,createField);
 router.delete('/field/:fieldId', verifyToken,checkAdminRole,removeField);
+router.get('/field/:venueId',verifyToken,checkAdminRole,getFieldsByVenueId)
 // địa điểm sân
 router.post('/venue', verifyToken,checkAdminRole,createVenue);
 router.delete('/venue/:venueId', verifyToken,checkAdminRole,removeVenue);
+router.get('/venue', verifyToken,checkAdminRole,getAllVenue);
 //promotion
 router.post('/promotion', verifyToken,checkAdminRole,createPromotion);
 router.put('/promotion/:id', verifyToken,checkAdminRole,updatePromotion);

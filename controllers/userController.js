@@ -1071,6 +1071,7 @@ async function createBooking(req, res) {
       endTime: endTime,
       totalPrice,
       status: 'unpaid',
+      match:false,
       createdAt: new Date(),
     };
 
@@ -1176,6 +1177,7 @@ async function sendMatchRequest(req, res) {
 
     const db= await connectToDB();
     const matchCollection = db.collection('matching');
+    const bookingCollection=db.collection('booking');
 
     // Kiểm tra xem sân đã có yêu cầu nào trong khoảng thời gian này chưa
     const existingRequest = await matchCollection.findOne({
@@ -1211,6 +1213,11 @@ async function sendMatchRequest(req, res) {
 
     // Lưu vào cơ sở dữ liệu
     const result = await matchCollection.insertOne(newRequest);
+    const r=await bookingCollection.updateOne(
+      { field:ObjectId.createFromHexString(fieldId), date:date, startTime:startTime,endTime: endTime, match: false }, // Tìm booking với match = false
+      { $set: { match: true } } // Cập nhật match thành true
+    );
+    console.log(r)
 
     res.status(201).json({
       ec: 0, // Thành công
@@ -1230,79 +1237,77 @@ async function sendMatchRequest(req, res) {
 
 async function getMatchRequests(req, res) {
   try {
-    // Kết nối đến cơ sở dữ liệu
-    const db = await connectToDB();
-    const currentTime = new Date();
-    const matchRequestCollection = db.collection('matching');
-    const fieldsCollection = db.collection('field'); // Collection field để lấy location
+    const db = await connectToDB(); // Kết nối đến cơ sở dữ liệu
+    const matchRequestCollection = db.collection('matching'); // Collection lưu trữ yêu cầu match
+    const fieldsCollection = db.collection('field'); // Collection lưu trữ thông tin field để lấy location
 
-    // Lấy tham số phân trang từ URL parameters
-    const page = parseInt(req.params.page) || 1; // Mặc định là trang 1 nếu không có tham số
-    const record = parseInt(req.params.record) || 10; // Mặc định là 10 yêu cầu trên mỗi trang nếu không có tham số
+    // Lấy tham số phân trang từ query parameters
+    const page = parseInt(req.query.page) || 1; // Trang hiện tại, mặc định là trang 1
+    const record = parseInt(req.query.record) || 10; // Số bản ghi trên mỗi trang, mặc định là 10
 
-    // Tính toán số lượng yêu cầu cần bỏ qua
+    // Tính toán số lượng yêu cầu cần bỏ qua dựa vào trang và số bản ghi trên mỗi trang
     const skip = (page - 1) * record;
 
-    // Lấy bộ lọc từ query params
-    const { sport, location } = req.query; // Lấy môn thể thao và vị trí từ query parameters nếu có
+    // Lấy bộ lọc từ query parameters
+    const { sport, location } = req.query; // Môn thể thao và vị trí
 
-    // Tạo điều kiện lọc
-    const filter = {
-      startTime: { $gt: currentTime }, // Lọc các yêu cầu có startTime lớn hơn thời gian hiện tại
-    };
+    // Tạo điều kiện lọc cơ bản (lấy tất cả các yêu cầu matching)
+    const filter = {};
 
-    // Nếu có lọc theo môn thể thao
+    // Nếu có lọc theo sport
     if (sport) {
       filter.sport = sport; // Thêm điều kiện lọc theo môn thể thao
     }
 
-    // Nếu có lọc theo vị trí
-    let fieldIds = null;
+    // Nếu có lọc theo location
     if (location) {
       // Lấy danh sách các field có location trùng khớp
       const fields = await fieldsCollection.find({ location }).toArray();
-      fieldIds = fields.map(field => field._id); // Lấy danh sách fieldId từ các field có location phù hợp
+      const fieldIds = fields.map(field => field._id); // Lấy danh sách fieldId của các sân khớp với vị trí
 
-      // Nếu không có field nào khớp với location, trả về kết quả rỗng
+      // Nếu không có field nào phù hợp với location, trả về kết quả rỗng
       if (fieldIds.length === 0) {
         return res.status(200).json({
           ec: 0, // Thành công
           total: 0,
           data: [],
-          msg: 'Không có yêu cầu nào phù hợp với vị trí',
+          msg: 'Không có yêu cầu nào phù hợp với vị trí đã chọn.',
         });
       }
 
-      // Thêm điều kiện lọc theo fieldId
+      // Thêm điều kiện lọc theo danh sách fieldId
       filter.fieldId = { $in: fieldIds };
     }
 
-    // Lấy danh sách các yêu cầu với startTime chưa diễn ra và có thể lọc thêm sport, location
-    const requests = await matchRequestCollection.find(filter)
-      .skip(skip) // Bỏ qua số yêu cầu tương ứng với trang
+    // Lấy danh sách tất cả yêu cầu matching với phân trang và điều kiện lọc
+    const matchings = await matchRequestCollection.find(filter)
+      .skip(skip) // Bỏ qua số lượng yêu cầu tương ứng với trang hiện tại
       .limit(record) // Giới hạn số yêu cầu trên mỗi trang
       .toArray();
 
-    // Tính tổng số yêu cầu để tính toán số trang
-    const totalRequests = await matchRequestCollection.countDocuments(filter);
+    // Tính tổng số yêu cầu để tính tổng số trang
+    const totalMatchings = await matchRequestCollection.countDocuments(filter);
 
-    const totalPages = Math.ceil(totalRequests / record); // Tính số trang
+    // Tính số trang
+    const totalPages = Math.ceil(totalMatchings / record);
 
-    // Trả về danh sách yêu cầu với thông tin phân trang
+    // Trả về danh sách yêu cầu cùng thông tin phân trang
     res.status(200).json({
       ec: 0, // Thành công
-      total: requests.length,
-      data: requests, // Dữ liệu yêu cầu 
-      msg: 'Lấy danh sách yêu cầu thành công.',
+      total: totalMatchings, // Tổng số yêu cầu
+      totalPages, // Tổng số trang
+      data: matchings, // Dữ liệu yêu cầu
+      msg: 'Lấy danh sách yêu cầu matching thành công.',
     });
   } catch (error) {
-    console.error('Error getting match requests:', error);
+    console.error('Error getting matchings:', error);
     res.status(500).json({
       ec: 2, // Lỗi server
-      msg: 'Đã xảy ra lỗi khi lấy danh sách yêu cầu.',
+      msg: 'Đã xảy ra lỗi khi lấy danh sách yêu cầu matching.',
     });
   }
 }
+
 
 async function respondToMatchRequest(req, res) {
   try {

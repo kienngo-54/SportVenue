@@ -121,7 +121,7 @@ async function getFieldsByVenueId(req, res) {
    
 
     // Lấy danh sách các sân thuộc venueId
-    const fields = await fieldsCollection.find({ venueId: venueId }).toArray();
+    const fields = await fieldsCollection.find({ venueId: ObjectId.createFromHexString(venueId) }).toArray();
 
     
     

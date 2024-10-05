@@ -170,7 +170,7 @@ async function createVenue(req, res) {
     }
 
     // Tạo và lưu địa điểm mới
-    const newVenue = new Venue({ name, location });
+    const newVenue = new Venue( {name, location} );
     const result = await fieldsCollection.insertOne(newVenue);
     console.log(`New venue added with ID ${result.insertedId}`);
 
@@ -238,8 +238,9 @@ async function getAllVenue(req, res) {
     // Tính toán số lượng địa điểm cần bỏ qua
     const skip = (page - 1) * record;
 
-    // Lấy danh sách địa điểm với phân trang
+    // Lấy danh sách địa điểm với phân trang và sắp xếp theo createdAt
     const venues = await fieldsCollection.find({})
+      .sort({ createdAt: -1 }) // Sắp xếp theo createdAt, mới nhất lên đầu
       .skip(skip) // Bỏ qua số địa điểm tương ứng với trang
       .limit(record) // Giới hạn số địa điểm trên mỗi trang
       .toArray();
@@ -247,13 +248,10 @@ async function getAllVenue(req, res) {
     // Tính tổng số địa điểm để tính toán số trang
     const totalVenues = await fieldsCollection.countDocuments({}); // Đếm tổng số địa điểm
 
-    // Tính tổng số trang
-    const totalPages = Math.ceil(totalVenues / record); // Tính số trang
-
     // Trả về danh sách địa điểm với thông tin phân trang
     res.status(200).json({
       ec: 0, // Thành công
-      total: venues.length, // Tổng số địa điểm trong trang
+      total: totalVenues, // Tổng số địa điểm trong trang
       data: venues, // Dữ liệu địa điểm
       msg: 'Lấy danh sách địa điểm thành công.',
     });
@@ -265,6 +263,7 @@ async function getAllVenue(req, res) {
     });
   }
 }
+
 
 
 

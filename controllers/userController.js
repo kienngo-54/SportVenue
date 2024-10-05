@@ -1092,13 +1092,10 @@ async function getBooking(req, res) {
     const bookingsCollection = db.collection('booking');
     const fieldsCollection = db.collection('field'); // Kết nối đến collection field
 
-    const currentDateTime = new Date(); // Lấy thời gian hiện tại
-
-    // Lấy danh sách các booking chưa bắt đầu của người dùng
+    // Lấy danh sách tất cả các booking của người dùng
     const bookings = await bookingsCollection
       .find({
         user: ObjectId.createFromHexString(userId), // Lọc theo userId
-        startTime: { $gt: currentDateTime } // Lọc các booking có startTime lớn hơn thời gian hiện tại
       })
       .sort({ createdAt: -1 }) // Sắp xếp theo thứ tự mới nhất
       .skip((page - 1) * record) // Bỏ qua các kết quả của trang trước
@@ -1106,11 +1103,17 @@ async function getBooking(req, res) {
       .toArray(); // Chuyển đổi kết quả thành mảng
 
     // Nếu không có booking nào
-    
+    if (bookings.length === 0) {
+      return res.status(404).json({
+        ec: 1, // Không có lịch sử booking
+        msg: 'Không tìm thấy lịch sử đặt sân',
+        data: [],
+      });
+    }
 
     // Lấy thêm thông tin sân và môn thể thao từ collection field
     const bookingsWithFieldInfo = [];
-    
+
     for (const booking of bookings) {
       const fieldId = booking.field; // ID sân
 
@@ -1124,7 +1127,7 @@ async function getBooking(req, res) {
         continue;
       }
 
-      const field = await fieldsCollection.findOne({ _id:  fieldId });
+      const field = await fieldsCollection.findOne({ _id: fieldId});
       bookingsWithFieldInfo.push({
         ...booking,
         fieldName: field ? field.name : 'Không có tên sân', // Thêm tên sân vào kết quả
@@ -1135,6 +1138,7 @@ async function getBooking(req, res) {
     // Trả về danh sách booking với tên sân và môn thể thao
     res.status(200).json({
       ec: 0, // Thành công
+      total: bookingsWithFieldInfo.length,
       data: bookingsWithFieldInfo,
       msg: 'Lấy lịch sử đặt sân thành công',
     });
@@ -1146,6 +1150,8 @@ async function getBooking(req, res) {
     });
   }
 }
+
+
 //matching
 async function sendMatchRequest(req, res) {
   try {

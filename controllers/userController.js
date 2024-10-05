@@ -1066,8 +1066,9 @@ async function createBooking(req, res) {
     const newBooking = {
       user: ObjectId.createFromHexString(userId),
       field: ObjectId.createFromHexString(fieldId),
-      startTime: startDateTime,
-      endTime: endDateTime,
+      Date: date ,
+      startTime: startTime,
+      endTime: endTime,
       totalPrice,
       status: 'unpaid',
       createdAt: new Date(),
@@ -1105,13 +1106,7 @@ async function getBooking(req, res) {
       .toArray(); // Chuyển đổi kết quả thành mảng
 
     // Nếu không có booking nào
-    if (bookings.length === 0) {
-      return res.status(404).json({
-        ec: 1, // Không có lịch sử booking
-        msg: 'Không tìm thấy lịch sử đặt sân',
-        data: [],
-      });
-    }
+    
 
     // Lấy thêm thông tin sân và môn thể thao từ collection field
     const bookingsWithFieldInfo = [];
@@ -1151,17 +1146,13 @@ async function getBooking(req, res) {
     });
   }
 }
-
-
-
-
 //matching
 async function sendMatchRequest(req, res) {
   try {
-    const { fieldId, startTime, endTime, message, max_number } = req.body;
+    const { fieldId, date,startTime, endTime, message, max_number } = req.body;
 
     // Kiểm tra dữ liệu cần thiết
-    if (  !fieldId || !startTime || !endTime || !max_number) {
+    if (  !date||!fieldId || !startTime || !endTime || !max_number) {
       return res.status(400).json({
         ec: 1, // Lỗi thiếu thông tin
         msg: 'Thiếu thông tin cần thiết.',
@@ -1169,11 +1160,12 @@ async function sendMatchRequest(req, res) {
     }
 
     // Kiểm tra nếu thời gian bắt đầu và kết thúc hợp lệ
-    if (new Date(startTime) >= new Date(endTime)) {
-      return res.status(400).json({
-        ec: 1, // Lỗi thời gian không hợp lệ
-        msg: 'Thời gian kết thúc phải sau thời gian bắt đầu.',
-      });
+    const startDateTime = new Date(`${date}T${startTime}:00`);
+    const endDateTime = new Date(`${date}T${endTime}:00`);
+
+    // Kiểm tra thời gian
+    if (startDateTime >= endDateTime) {
+      return res.status(400).json({ ec: 1, msg: 'Thời gian kết thúc phải sau thời gian bắt đầu.' });
     }
 
     const db= await connectToDB();
@@ -1198,11 +1190,12 @@ async function sendMatchRequest(req, res) {
     }
     const userid=req.user.userId;
     // Tạo một yêu cầu mới
-    const newRequest = new Matching({
+    const newRequest =({
       userid,
       fieldId,
-      startTime: new Date(startTime),
-      endTime: new Date(endTime),
+      date,
+      startTime: startTime,
+      endTime: endTime,
       message: message || '', // Đảm bảo message không null
       max_number,
       matchedUser: [], // Khởi tạo mảng matchedUser rỗng
@@ -1237,17 +1230,17 @@ async function getMatchRequests(req, res) {
 
     // Lấy tham số phân trang từ URL parameters
     const page = parseInt(req.params.page) || 1; // Mặc định là trang 1 nếu không có tham số
-    const limit = parseInt(req.params.limit) || 10; // Mặc định là 10 yêu cầu trên mỗi trang nếu không có tham số
+    const record = parseInt(req.params.record) || 10; // Mặc định là 10 yêu cầu trên mỗi trang nếu không có tham số
 
     // Tính toán số lượng yêu cầu cần bỏ qua
-    const skip = (page - 1) * limit;
+    const skip = (page - 1) * record;
 
     // Lấy danh sách các yêu cầu với startTime chưa diễn ra
     const requests = await matchRequestCollection.find({
       startTime: { $gt: currentTime } // Lọc các yêu cầu có startTime lớn hơn thời gian hiện tại
     })
     .skip(skip) // Bỏ qua số yêu cầu tương ứng với trang
-    .limit(limit) // Giới hạn số yêu cầu trên mỗi trang
+    .limit(record) // Giới hạn số yêu cầu trên mỗi trang
     .toArray();
 
     // Tính tổng số yêu cầu để tính toán số trang
@@ -1255,18 +1248,13 @@ async function getMatchRequests(req, res) {
       startTime: { $gt: currentTime } // Đếm tổng số yêu cầu chưa diễn ra
     });
 
-    const totalPages = Math.ceil(totalRequests / limit); // Tính số trang
+    const totalPages = Math.ceil(totalRequests / record); // Tính số trang
 
     // Trả về danh sách yêu cầu với thông tin phân trang
     res.status(200).json({
       ec: 0, // Thành công
-      data: requests, // Dữ liệu yêu cầu
-      pagination: {
-        totalRequests, // Tổng số yêu cầu
-        totalPages, // Tổng số trang
-        currentPage: page, // Trang hiện tại
-        limit, // Số yêu cầu trên mỗi trang
-      },
+      total: requests.length,
+      data: requests, // Dữ liệu yêu cầu 
       msg: 'Lấy danh sách yêu cầu thành công.',
     });
   } catch (error) {

@@ -698,51 +698,7 @@ async function updateTeam(req, res){
   }
 };
 
-async function getBooking(req, res) {
-  try {
-    const userId = req.user.userId; // Lấy userId từ thông tin đăng nhập
-    const page = parseInt(req.query.page) || 1; // Lấy trang hiện tại, mặc định là trang 1
-    const record = 10; // Số lượng booking trả về tối đa là 10
 
-    const db = await connectToDB(); // Kết nối đến database
-    const bookingsCollection = db.collection('booking');
-
-    const currentDateTime = new Date(); // Lấy thời gian hiện tại
-
-    // Lấy danh sách các booking chưa bắt đầu của người dùng, sắp xếp theo thời gian tạo mới nhất
-    const bookings = await bookingsCollection
-      .find({
-        user: ObjectId.createFromHexString(userId), // Lọc theo userId
-        startTime: { $gt: currentDateTime } // Lọc các booking có startTime lớn hơn thời gian hiện tại
-      })
-      .sort({ createdAt: -1 }) // Sắp xếp theo thứ tự mới nhất
-      .skip((page - 1) * record) // Bỏ qua các kết quả của trang trước
-      .limit(record) // Giới hạn kết quả trả về tối đa 10 bản ghi
-      .toArray(); // Chuyển đổi kết quả thành mảng
-
-    // Nếu không có booking nào
-    if (bookings.length === 0) {
-      return res.status(404).json({
-        ec: 1, // Không có lịch sử booking
-        msg: 'Không tìm thấy lịch sử đặt sân',
-        data: [],
-      });
-    }
-
-    // Trả về danh sách booking
-    res.status(200).json({
-      ec: 0, // Thành công
-      data: bookings,
-      msg: 'Lấy lịch sử đặt sân thành công',
-    });
-  } catch (err) {
-    console.error('Lỗi khi lấy lịch sử booking:', err);
-    res.status(500).json({
-      ec: 2, // Lỗi server
-      msg: 'Lỗi server khi lấy lịch sử đặt sân',
-    });
-  }
-}
 
 
 
@@ -1125,14 +1081,87 @@ async function createBooking(req, res) {
     res.status(500).json({ ec: 2, msg: 'Đã xảy ra lỗi khi đặt sân.' });
   }
 }
+async function getBooking(req, res) {
+  try {
+    const userId = req.user.userId; // Lấy userId từ thông tin đăng nhập
+    const page = parseInt(req.query.page) || 1; // Lấy trang hiện tại, mặc định là trang 1
+    const record = 10; // Số lượng booking trả về tối đa là 10
+
+    const db = await connectToDB(); // Kết nối đến database
+    const bookingsCollection = db.collection('booking');
+    const fieldsCollection = db.collection('field'); // Kết nối đến collection field
+
+    const currentDateTime = new Date(); // Lấy thời gian hiện tại
+
+    // Lấy danh sách các booking chưa bắt đầu của người dùng
+    const bookings = await bookingsCollection
+      .find({
+        user: ObjectId.createFromHexString(userId), // Lọc theo userId
+        startTime: { $gt: currentDateTime } // Lọc các booking có startTime lớn hơn thời gian hiện tại
+      })
+      .sort({ createdAt: -1 }) // Sắp xếp theo thứ tự mới nhất
+      .skip((page - 1) * record) // Bỏ qua các kết quả của trang trước
+      .limit(record) // Giới hạn kết quả trả về tối đa 10 bản ghi
+      .toArray(); // Chuyển đổi kết quả thành mảng
+
+    // Nếu không có booking nào
+    if (bookings.length === 0) {
+      return res.status(404).json({
+        ec: 1, // Không có lịch sử booking
+        msg: 'Không tìm thấy lịch sử đặt sân',
+        data: [],
+      });
+    }
+
+    // Lấy thêm thông tin sân và môn thể thao từ collection field
+    const bookingsWithFieldInfo = [];
+    
+    for (const booking of bookings) {
+      const fieldId = booking.field; // ID sân
+
+      // Kiểm tra xem fieldId có hợp lệ không
+      if (!ObjectId.isValid(fieldId)) {
+        bookingsWithFieldInfo.push({
+          ...booking,
+          fieldName: 'ID sân không hợp lệ', // Ghi chú về ID không hợp lệ
+          sport: 'Không có môn thể thao', // Thông tin môn thể thao không có
+        });
+        continue;
+      }
+
+      const field = await fieldsCollection.findOne({ _id:  fieldId });
+      bookingsWithFieldInfo.push({
+        ...booking,
+        fieldName: field ? field.name : 'Không có tên sân', // Thêm tên sân vào kết quả
+        sport: field ? field.sport : 'Không có môn thể thao', // Thêm môn thể thao vào kết quả
+      });
+    }
+
+    // Trả về danh sách booking với tên sân và môn thể thao
+    res.status(200).json({
+      ec: 0, // Thành công
+      data: bookingsWithFieldInfo,
+      msg: 'Lấy lịch sử đặt sân thành công',
+    });
+  } catch (err) {
+    console.error('Lỗi khi lấy lịch sử booking:', err);
+    res.status(500).json({
+      ec: 2, // Lỗi server
+      msg: 'Lỗi server khi lấy lịch sử đặt sân',
+    });
+  }
+}
+
+
+
 
 //matching
 async function sendMatchRequest(req, res) {
   try {
-    const { teamId, fieldId, startTime, endTime, message, max_number } = req.body;
+    const { fieldId, startTime, endTime, message, max_number } = req.body;
 
     // Kiểm tra dữ liệu cần thiết
-    if (!teamId || !fieldId || !startTime || !endTime || !max_number) {
+    if (  !fieldId || !startTime || !endTime || !max_number) {
       return res.status(400).json({
         ec: 1, // Lỗi thiếu thông tin
         msg: 'Thiếu thông tin cần thiết.',
@@ -1167,10 +1196,10 @@ async function sendMatchRequest(req, res) {
         msg: 'Sân đã có yêu cầu trong khoảng thời gian này.',
       });
     }
-
+    const userid=req.user.userId;
     // Tạo một yêu cầu mới
     const newRequest = new Matching({
-      teamId,
+      userid,
       fieldId,
       startTime: new Date(startTime),
       endTime: new Date(endTime),

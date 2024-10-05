@@ -1066,7 +1066,7 @@ async function createBooking(req, res) {
     const newBooking = {
       user: ObjectId.createFromHexString(userId),
       field: ObjectId.createFromHexString(fieldId),
-      Date: date ,
+      date: date ,
       startTime: startTime,
       endTime: endTime,
       totalPrice,
@@ -1155,7 +1155,7 @@ async function getBooking(req, res) {
 //matching
 async function sendMatchRequest(req, res) {
   try {
-    const { fieldId, date,startTime, endTime, message, max_number } = req.body;
+    const { fieldId, date, startTime, endTime, sport, totalamount,message, max_number } = req.body;
 
     // Kiểm tra dữ liệu cần thiết
     if (  !date||!fieldId || !startTime || !endTime || !max_number) {
@@ -1202,6 +1202,7 @@ async function sendMatchRequest(req, res) {
       date,
       startTime: startTime,
       endTime: endTime,
+      sport, totalamount,
       message: message || '', // Đảm bảo message không null
       max_number,
       matchedUser: [], // Khởi tạo mảng matchedUser rỗng

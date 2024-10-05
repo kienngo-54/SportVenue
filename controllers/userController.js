@@ -1155,7 +1155,7 @@ async function getBooking(req, res) {
 //matching
 async function sendMatchRequest(req, res) {
   try {
-    const { fieldId, date, startTime, endTime, sport, totalamount,message, max_number } = req.body;
+    const { fieldId, date, startTime, endTime, sport, totalPrice,message, max_number } = req.body;
 
     // Kiểm tra dữ liệu cần thiết
     if (  !date||!fieldId || !startTime || !endTime || !max_number) {
@@ -1202,7 +1202,7 @@ async function sendMatchRequest(req, res) {
       date,
       startTime: startTime,
       endTime: endTime,
-      sport, totalamount,
+      sport, totalPrice,
       message: message || '', // Đảm bảo message không null
       max_number,
       matchedUser: [], // Khởi tạo mảng matchedUser rỗng
@@ -1231,9 +1231,10 @@ async function sendMatchRequest(req, res) {
 async function getMatchRequests(req, res) {
   try {
     // Kết nối đến cơ sở dữ liệu
-    const db= await connectToDB();
+    const db = await connectToDB();
     const currentTime = new Date();
     const matchRequestCollection = db.collection('matching');
+    const fieldsCollection = db.collection('field'); // Collection field để lấy location
 
     // Lấy tham số phân trang từ URL parameters
     const page = parseInt(req.params.page) || 1; // Mặc định là trang 1 nếu không có tham số
@@ -1242,18 +1243,48 @@ async function getMatchRequests(req, res) {
     // Tính toán số lượng yêu cầu cần bỏ qua
     const skip = (page - 1) * record;
 
-    // Lấy danh sách các yêu cầu với startTime chưa diễn ra
-    const requests = await matchRequestCollection.find({
-      startTime: { $gt: currentTime } // Lọc các yêu cầu có startTime lớn hơn thời gian hiện tại
-    })
-    .skip(skip) // Bỏ qua số yêu cầu tương ứng với trang
-    .limit(record) // Giới hạn số yêu cầu trên mỗi trang
-    .toArray();
+    // Lấy bộ lọc từ query params
+    const { sport, location } = req.query; // Lấy môn thể thao và vị trí từ query parameters nếu có
+
+    // Tạo điều kiện lọc
+    const filter = {
+      startTime: { $gt: currentTime }, // Lọc các yêu cầu có startTime lớn hơn thời gian hiện tại
+    };
+
+    // Nếu có lọc theo môn thể thao
+    if (sport) {
+      filter.sport = sport; // Thêm điều kiện lọc theo môn thể thao
+    }
+
+    // Nếu có lọc theo vị trí
+    let fieldIds = null;
+    if (location) {
+      // Lấy danh sách các field có location trùng khớp
+      const fields = await fieldsCollection.find({ location }).toArray();
+      fieldIds = fields.map(field => field._id); // Lấy danh sách fieldId từ các field có location phù hợp
+
+      // Nếu không có field nào khớp với location, trả về kết quả rỗng
+      if (fieldIds.length === 0) {
+        return res.status(200).json({
+          ec: 0, // Thành công
+          total: 0,
+          data: [],
+          msg: 'Không có yêu cầu nào phù hợp với vị trí',
+        });
+      }
+
+      // Thêm điều kiện lọc theo fieldId
+      filter.fieldId = { $in: fieldIds };
+    }
+
+    // Lấy danh sách các yêu cầu với startTime chưa diễn ra và có thể lọc thêm sport, location
+    const requests = await matchRequestCollection.find(filter)
+      .skip(skip) // Bỏ qua số yêu cầu tương ứng với trang
+      .limit(record) // Giới hạn số yêu cầu trên mỗi trang
+      .toArray();
 
     // Tính tổng số yêu cầu để tính toán số trang
-    const totalRequests = await matchRequestCollection.countDocuments({
-      startTime: { $gt: currentTime } // Đếm tổng số yêu cầu chưa diễn ra
-    });
+    const totalRequests = await matchRequestCollection.countDocuments(filter);
 
     const totalPages = Math.ceil(totalRequests / record); // Tính số trang
 
@@ -1272,6 +1303,7 @@ async function getMatchRequests(req, res) {
     });
   }
 }
+
 async function respondToMatchRequest(req, res) {
   try {
     const { matchingId, quantity } = req.body;

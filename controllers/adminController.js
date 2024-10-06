@@ -743,6 +743,8 @@ async function getAllBooking(req, res) {
           as: 'userDetails'  // Tạo mảng chứa thông tin chi tiết của user
         }
       },
+      { $unwind: { path: '$userDetails', preserveNullAndEmptyArrays: true } },  // Biến userDetails thành object
+
       {
         $lookup: {
           from: 'field',  // Tên collection 'fields'
@@ -751,6 +753,8 @@ async function getAllBooking(req, res) {
           as: 'fieldDetails'
         }
       },
+      { $unwind: { path: '$fieldDetails', preserveNullAndEmptyArrays: true } },  // Biến fieldDetails thành object
+
       {
         $lookup: {
           from: 'referee',  // Tên collection 'referees'
@@ -759,6 +763,8 @@ async function getAllBooking(req, res) {
           as: 'refereeDetails'
         }
       },
+      { $unwind: { path: '$refereeDetails', preserveNullAndEmptyArrays: true } },  // Biến refereeDetails thành object
+
       {
         $lookup: {
           from: 'trainer',  // Tên collection 'trainers'
@@ -767,6 +773,8 @@ async function getAllBooking(req, res) {
           as: 'trainerDetails'
         }
       },
+      { $unwind: { path: '$trainerDetails', preserveNullAndEmptyArrays: true } },  // Biến trainerDetails thành object
+
       {
         $lookup: {
           from: 'equipment',  // Tên collection 'equipment'
@@ -775,18 +783,20 @@ async function getAllBooking(req, res) {
           as: 'equipmentDetails'  // Lấy thông tin chi tiết thiết bị
         }
       },
+      { $unwind: { path: '$equipmentDetails', preserveNullAndEmptyArrays: true } },  // Biến equipmentDetails thành object
+
       { $skip: skip },  // Bỏ qua số bản ghi cần bỏ qua
       { $limit: limit },  // Giới hạn số bản ghi trả về
     ]).toArray();
 
-    // Format lại dữ liệu nếu cần (ví dụ chỉ lấy phần tử đầu tiên trong mảng)
+    // Format lại dữ liệu nếu cần
     const formattedBookings = bookings.map(booking => ({
       ...booking,
-      user: booking.userDetails[0]?.username || 'Unknown User',  // Lấy tên người dùng
-      field: booking.fieldDetails[0]?.name || 'Unknown Field',  // Lấy tên sân
-      referee: booking.refereeDetails[0]?.name || 'No Referee',  // Lấy tên trọng tài
-      trainer: booking.trainerDetails[0]?.name || 'No Trainer',  // Lấy tên huấn luyện viên
-      equipment: booking.equipmentDetails[0]?.name || 'Unknown Equipment'  // Lấy tên thiết bị
+      user: booking.userDetails?.username || 'Unknown User',  // Lấy tên người dùng
+      field: booking.fieldDetails?.name || 'Unknown Field',  // Lấy tên sân
+      referee: booking.refereeDetails?.name || 'No Referee',  // Lấy tên trọng tài
+      trainer: booking.trainerDetails?.name || 'No Trainer',  // Lấy tên huấn luyện viên
+      equipment: booking.equipmentDetails?.name || 'Unknown Equipment'  // Lấy tên thiết bị
     }));
 
     return res.status(200).json({
@@ -803,6 +813,7 @@ async function getAllBooking(req, res) {
     });
   }
 }
+
 //team
 async function getAllTeams(req, res) {
   try {

@@ -1199,12 +1199,12 @@ async function sendMatchRequest(req, res) {
     const userid=req.user.userId;
     // Tạo một yêu cầu mới
     const newRequest =({
-      userid,
-      fieldId,
+      userId:ObjectId.createFromHexString(userid),
+      fieldId:ObjectId.createFromHexString(fieldId),
       date,
       startTime: startTime,
       endTime: endTime,
-      sport, totalPrice,
+      sport:sport, totalPrice:parseInt(totalPrice),
       message: message || '', // Đảm bảo message không null
       max_number,
       matchedUser: [], // Khởi tạo mảng matchedUser rỗng

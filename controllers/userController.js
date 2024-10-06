@@ -1237,76 +1237,86 @@ async function sendMatchRequest(req, res) {
 
 async function getMatchRequests(req, res) {
   try {
-    const db = await connectToDB(); // Kết nối đến cơ sở dữ liệu
-    const matchRequestCollection = db.collection('matching'); // Collection lưu trữ yêu cầu match
-    const fieldsCollection = db.collection('field'); // Collection lưu trữ thông tin field để lấy location
+    // Kết nối đến cơ sở dữ liệu
+    const db = await connectToDB();
+    const matchRequestCollection = db.collection('matching');
+    const fieldsCollection = db.collection('field'); // Collection field để lấy thông tin sân
 
-    // Lấy tham số phân trang từ query parameters
-    const page = parseInt(req.query.page) || 1; // Trang hiện tại, mặc định là trang 1
-    const record = parseInt(req.query.record) || 10; // Số bản ghi trên mỗi trang, mặc định là 10
+    // Lấy các tham số lọc từ query params
+    const { sport, location } = req.query;
 
-    // Tính toán số lượng yêu cầu cần bỏ qua dựa vào trang và số bản ghi trên mỗi trang
-    const skip = (page - 1) * record;
-
-    // Lấy bộ lọc từ query parameters
-    const { sport, location } = req.query; // Môn thể thao và vị trí
-
-    // Tạo điều kiện lọc cơ bản (lấy tất cả các yêu cầu matching)
+    // Tạo bộ lọc cho matching
     const filter = {};
-
+    
     // Nếu có lọc theo sport
     if (sport) {
-      filter.sport = sport; // Thêm điều kiện lọc theo môn thể thao
+      filter.sport = sport; // Thêm điều kiện lọc sport vào
     }
 
-    // Nếu có lọc theo location
+    // Tìm tất cả các matching theo bộ lọc sport
+    const matchings = await matchRequestCollection.find(filter).toArray();
+
+    // Nếu không có matching nào thỏa mãn điều kiện
+    if (matchings.length === 0) {
+      return res.status(200).json({
+        ec: 0, // Thành công
+        total: 0,
+        data: [],
+        msg: 'Không có yêu cầu matching nào thỏa mãn điều kiện sport.',
+      });
+    }
+
+    // Lọc các matching có fieldId và tìm thông tin sân từ fieldId
+    const fieldIds = matchings.map(matching => matching.fieldId);
+
+    // Tạo bộ lọc cho collection field
+    const fieldFilter = { _id: { $in: fieldIds } };
+
+    // Nếu có truyền vào location, thêm điều kiện lọc location
     if (location) {
-      // Lấy danh sách các field có location trùng khớp
-      const fields = await fieldsCollection.find({ location }).toArray();
-      const fieldIds = fields.map(field => field._id); // Lấy danh sách fieldId của các sân khớp với vị trí
-
-      // Nếu không có field nào phù hợp với location, trả về kết quả rỗng
-      if (fieldIds.length === 0) {
-        return res.status(200).json({
-          ec: 0, // Thành công
-          total: 0,
-          data: [],
-          msg: 'Không có yêu cầu nào phù hợp với vị trí đã chọn.',
-        });
-      }
-
-      // Thêm điều kiện lọc theo danh sách fieldId
-      filter.fieldId = { $in: fieldIds };
+      fieldFilter.location = location;
     }
 
-    // Lấy danh sách tất cả yêu cầu matching với phân trang và điều kiện lọc
-    const matchings = await matchRequestCollection.find(filter)
-      .skip(skip) // Bỏ qua số lượng yêu cầu tương ứng với trang hiện tại
-      .limit(record) // Giới hạn số yêu cầu trên mỗi trang
-      .toArray();
+    // Tìm các sân có fieldId tương ứng và (nếu có) location được truyền vào
+    const fields = await fieldsCollection.find(fieldFilter).toArray();
 
-    // Tính tổng số yêu cầu để tính tổng số trang
-    const totalMatchings = await matchRequestCollection.countDocuments(filter);
+    // Nếu không có sân nào thỏa mãn điều kiện location (nếu có)
+    if (fields.length === 0) {
+      return res.status(200).json({
+        ec: 0, // Thành công
+        total: 0,
+        data: [],
+        msg: 'Không có sân nào phù hợp với location đã chọn.',
+      });
+    }
 
-    // Tính số trang
-    const totalPages = Math.ceil(totalMatchings / record);
+    // Kết hợp matching với thông tin sân
+    const result = matchings.filter(matching =>
+      fields.some(field => field._id.equals(matching.fieldId))
+    ).map(matching => {
+      const field = fields.find(field => field._id.equals(matching.fieldId));
+      return {
+        ...matching,
+        fieldInfo: field, // Thêm thông tin sân vào matching
+      };
+    });
 
-    // Trả về danh sách yêu cầu cùng thông tin phân trang
+    // Trả về kết quả
     res.status(200).json({
       ec: 0, // Thành công
-      total: totalMatchings, // Tổng số yêu cầu
-      totalPages, // Tổng số trang
-      data: matchings, // Dữ liệu yêu cầu
-      msg: 'Lấy danh sách yêu cầu matching thành công.',
+      total: result.length,
+      data: result, // Dữ liệu matching với thông tin sân
+      msg: 'Lấy danh sách matching thành công.',
     });
   } catch (error) {
     console.error('Error getting matchings:', error);
     res.status(500).json({
       ec: 2, // Lỗi server
-      msg: 'Đã xảy ra lỗi khi lấy danh sách yêu cầu matching.',
+      msg: 'Đã xảy ra lỗi khi lấy danh sách matching.',
     });
   }
 }
+
 
 
 async function respondToMatchRequest(req, res) {

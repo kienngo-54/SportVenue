@@ -1,4 +1,5 @@
 const { ObjectId} = require('mongodb');
+
 const axios = require('axios');
 const bcrypt = require('bcryptjs');
 const User = require('../models/user');
@@ -711,30 +712,56 @@ async function updateTeam(req, res){
 //field
 async function searchField(req, res) {
   try {
-    const { date, startTime, endTime, location, sport, capacity, page = 1, record = 10 } = req.query; // Số kết quả mỗi trang
+    const { date, startTime, endTime, location, sport, capacity, page = 1, record = 10 } = req.query;
 
     // Kiểm tra các tham số bắt buộc
     if (!date || !startTime || !endTime) {
       return res.status(400).json({
-        ec: 1,  // Lỗi thiếu thông tin
+        ec: 1,
         msg: 'Thiếu thông tin bắt buộc: date, startTime, hoặc endTime',
       });
     }
 
-    // Chuyển đổi tham số thành Date
-    const startDateTime = new Date(`${date}T${startTime}:00`);
-    const endDateTime = new Date(`${date}T${endTime}:00`);
-
     const db = await connectToDB(); // Kết nối đến MongoDB
+    const fieldsCollection = db.collection('field');
+
+    // Bước 1: Tìm các sân thỏa mãn điều kiện về location, capacity, sport
+    const searchCriteria = {};
+    
+    if (location) {
+      searchCriteria.location = location;
+    }
+    if (sport) {
+      searchCriteria.sport = sport;
+    }
+    if (capacity) {
+      searchCriteria.capacity = { $gte: parseInt(capacity) }; // Sức chứa >= yêu cầu
+    }
+
+    // Lấy danh sách các sân thỏa mãn điều kiện
+    const availableFields = await fieldsCollection.find(searchCriteria).toArray();
+
+    // Nếu không tìm thấy sân nào thỏa mãn
+    if (availableFields.length === 0) {
+      return res.status(404).json({
+        ec: 1,
+        data: [],
+        msg: 'Không tìm thấy sân nào phù hợp',
+      });
+    }
+
+    // Lấy danh sách ID của các sân có sẵn
+    const availableFieldIds = availableFields.map(field => field._id);
+
     const bookingsCollection = db.collection('booking');
 
-    // Tìm các sân đã được đặt trong khoảng thời gian này
+    // Bước 2: Tìm các sân đã được đặt trong khoảng thời gian này
     const bookedFields = await bookingsCollection.aggregate([
       {
         $match: {
-          startTime: { $lt: endDateTime },
-          endTime: { $gt: startDateTime },
-          
+          date: date, // Lọc theo ngày đã cho
+          startTime: { $lt: endTime }, // Bắt đầu trước thời gian kết thúc
+          endTime: { $gt: startTime },   // Kết thúc sau thời gian bắt đầu
         },
       },
       {
@@ -746,60 +773,48 @@ async function searchField(req, res) {
 
     const bookedFieldIds = bookedFields.map(field => field._id);
 
-    // Xây dựng điều kiện tìm kiếm cho các sân trống
-    const searchCriteria = {
-      _id: { $nin: bookedFieldIds }, // Loại bỏ các sân đã được đặt
-    };
-
-    if (location) {
-      searchCriteria.location = location;
-    }
-    if (sport) {
-      searchCriteria.sport = sport;
-    }
-    if (capacity) {
-      searchCriteria.capacity = { $gte: parseInt(capacity) }; // Sức chứa >= yêu cầu
-    }
-
-    const fieldsCollection = db.collection('field');
+    // Bước 3: Lọc ra các sân có ID trong danh sách bookedFieldIds
+    const finalAvailableFields = availableFields.filter(field => !bookedFieldIds.includes(field._id));
 
     // Tính toán số lượng bản ghi cần bỏ qua
     const skip = (page - 1) * record;
 
     // Lấy danh sách các sân trống với phân trang
-    const availableFields = await fieldsCollection.find(searchCriteria).skip(skip).limit(parseInt(record)).toArray();
+    const paginatedFields = finalAvailableFields.slice(skip, skip + parseInt(record));
 
-    // Lấy tổng số lượng sân trống phù hợp với tiêu chí tìm kiếm
-    const totalFields = await fieldsCollection.countDocuments(searchCriteria);
+    // Tính toán tổng số trang
+    const totalFields = finalAvailableFields.length;
+    const totalPages = Math.ceil(totalFields / record);
 
     // Kiểm tra và trả về kết quả
-    if (availableFields.length === 0) {
+    if (paginatedFields.length === 0) {
       return res.status(404).json({
-        ec: 1,  // Lỗi không tìm thấy sân
+        ec: 1,
         data: [],
         msg: 'Không tìm thấy sân trống',
       });
     }
 
-    // Tính toán tổng số trang
-    const totalPages = Math.ceil(totalFields / record);
-
     res.status(200).json({
-      ec: 0,  // Thành công
-      total: totalFields, // Trả về tổng số sân trống
-      data: availableFields, // Trả về mảng thông tin về các sân hợp lệ
+      ec: 0,
+      total: totalFields,
+      data: paginatedFields,
       msg: 'Tìm thấy các sân trống',
-      totalPages: totalPages, // Trả về tổng số trang
+      totalPages: totalPages,
     });
   } catch (err) {
     console.error('Lỗi khi tìm kiếm sân:', err);
     res.status(500).json({
-      ec: 2,  // Lỗi server
+      ec: 2,
       data: [],
       msg: 'Lỗi server nội bộ khi tìm kiếm sân',
     });
   }
 }
+
+
+
+
 //equipmment
 async function searchEquipment(req, res) {
   try {
@@ -1403,19 +1418,21 @@ const getPayPalAccessToken = async () => {
 
   return response.data.access_token; // Trả về access token
 };
+
 async function createOrder(req, res) {
   try {
     // Lấy bookingId và totalAmount từ body request
-    const { bookingId, totalAmount } = req.body;
+    const { bookingId, totalPrice,return_url,cancel_url } = req.body;
 
     // Kiểm tra xem bookingId và totalAmount có được cung cấp hay không
-    if (!bookingId || !totalAmount) {
+    if (!bookingId || !totalPrice) {
       return res.status(400).json({
         ec: 1,
         msg: 'Thiếu thông tin bookingId hoặc totalAmount để tạo đơn hàng',
       });
     }
 
+    // Lấy access token từ PayPal
     const accessToken = await getPayPalAccessToken();
 
     // Gọi API PayPal để tạo đơn hàng
@@ -1425,17 +1442,33 @@ async function createOrder(req, res) {
       headers: {
         Authorization: `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
+        'PayPal-Request-Id': bookingId, // Thêm PayPal-Request-Id duy nhất cho yêu cầu này
       },
       data: {
-        intent: 'CAPTURE', // Có thể thay đổi tùy thuộc vào ý định của bạn
+        intent: 'CAPTURE', // Ý định thanh toán (CAPTURE hoặc AUTHORIZE)
         purchase_units: [
           {
+            reference_id: bookingId, // Tham chiếu đến bookingId
             amount: {
               currency_code: 'USD', // Hoặc mã tiền tệ khác nếu cần
-              value: totalAmount.toString(), // Đảm bảo giá trị là chuỗi
+              value: totalPrice.toString(), // Đảm bảo giá trị là chuỗi
             },
           },
         ],
+        payment_source: {
+          paypal: {
+            experience_context: {
+              payment_method_preference: 'IMMEDIATE_PAYMENT_REQUIRED',
+              brand_name: 'SportVenue', // Tên thương hiệu của bạn
+              locale: 'en-US', // Locale của người dùng
+              landing_page: 'LOGIN', // Trang hiển thị (LOGIN hoặc BILLING)
+              shipping_preference: 'NO_SHIPPING', // Không yêu cầu thông tin vận chuyển
+              user_action: 'PAY_NOW', // Hành động người dùng
+              return_url: 'https://example.com/returnUrl', // URL khi thanh toán thành công
+              cancel_url: 'https://example.com/cancelUrl', // URL khi thanh toán bị hủy
+            },
+          },
+        },
       },
     });
 
@@ -1452,7 +1485,74 @@ async function createOrder(req, res) {
       msg: 'Lỗi server khi tạo đơn hàng',
     });
   }
-};
+}
+
+
+
+
+
+
+
+
+// controller/paymentController.js
+async function captureOrder(req, res) {
+  try {
+    // Lấy bookingId từ body request
+    const { orderId } = req.body;
+
+    // Kiểm tra xem bookingId có được cung cấp hay không
+    if (!orderId) {
+      return res.status(400).json({
+        ec: 1,
+        msg: 'Thiếu thông tin bookingId để xác nhận thanh toán',
+      });
+    }
+
+    // Lấy access token từ PayPal
+    const accessToken = await getPayPalAccessToken();
+
+    // Gọi API PayPal để capture đơn hàng
+    const response = await axios.get(
+      `https://api.sandbox.paypal.com/v2/checkout/orders/${orderId}`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}` // access token từ PayPal
+        }
+      }
+    );
+
+    // Kiểm tra trạng thái phản hồi từ PayPal
+    if (response.data.status === 'COMPLETED') {
+      return res.json({
+        ec: 0,
+        msg: 'Thanh toán thành công',
+        data: response.data, // Trả về dữ liệu thanh toán từ PayPal
+      });
+    } else {
+      return res.status(400).json({
+        ec: 1,
+        msg: 'Thanh toán chưa hoàn tất',
+        data: response.data,
+      });
+    }
+  } catch (err) {
+    console.error('Lỗi khi capture đơn hàng:', err);
+    res.status(500).json({
+      ec: 2,
+      msg: 'Lỗi server khi xác nhận thanh toán',
+    });
+  }
+}
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1500,5 +1600,5 @@ module.exports = { registerUser,loginUser,getUserInfo,addOrUpdateAddress,addOrUp
   searchTrainer,
   createBooking,getBooking,
   sendMatchRequest,getMatchRequests,respondToMatchRequest,
-  createOrder,
+  createOrder,captureOrder
 };

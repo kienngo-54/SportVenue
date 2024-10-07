@@ -8,7 +8,7 @@ const { registerUser,loginUser,getUserInfo,changePass,addOrUpdateAddress,addOrUp
   searchTrainer,
   createBooking,getBooking,
   sendMatchRequest, getMatchRequests,respondToMatchRequest,
-  createOrder} = require('../controllers/userController');
+  createOrder,captureOrder} = require('../controllers/userController');
 const verifyToken = require('../utils/vertifyToken');
 //user
 router.post('/register', registerUser);
@@ -38,4 +38,5 @@ router.get('/matching',verifyToken, getMatchRequests);
 router.patch('/matching',verifyToken, respondToMatchRequest);
 //payment
 router.post('/payment',verifyToken,createOrder);
+router.post('/payment/capture',verifyToken,captureOrder);
 module.exports = router;
